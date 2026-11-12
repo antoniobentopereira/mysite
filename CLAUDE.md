@@ -20,6 +20,17 @@ portfolio. Visitors should think: "curious, creative, actually builds things."
 - Never put API keys or secrets in code. This repo is public.
 - Ask before adding any dependency or tool.
 
+## Projects
+Every experiment follows this contract:
+- Self-contained folder: it works when copied into public/<project-name>/.
+- Has its own index.html.
+- Relative paths only, never a leading slash.
+- No build step.
+- Any library must be a single file saved inside the project folder,
+  never loaded from a CDN.
+- Uses the homepage's palette variables and font (see Design).
+- Includes a short note: why it was built, and that it was built with AI.
+
 ## Design
 - Font: Bricolage Grotesque (Google Fonts), system-ui as fallback.
 - Palette (CSS variables on :root in public/style.css):
