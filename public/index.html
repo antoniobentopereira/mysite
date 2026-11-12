@@ -3,10 +3,53 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Bento's Playground</title>
+  <title>Antonio Bento | Playground</title>
+  <meta name="description" content="Antonio Bento's playground: a computer science student in Rio building small things, games, tools and experiments.">
+  <meta name="theme-color" content="#eaece5">
+
+  <!-- Open Graph: used when the link is shared on social media -->
+  <meta property="og:title" content="Antonio Bento | Playground">
+  <meta property="og:description" content="Antonio Bento's playground: a computer science student in Rio building small things, games, tools and experiments.">
+
+  <!-- Favicon: a bento emoji drawn as a tiny inline SVG -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🍱%3C/text%3E%3C/svg%3E">
+
+  <!-- Font: Bricolage Grotesque from Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
 </head>
-<body style="font-family: system-ui, sans-serif; text-align: center; margin-top: 20vh;">
-  <h1>Bento's Playground</h1>
-  <p>Under construction. Please enjoy this blank page responsibly TEST.</p>
+<body>
+  <main class="page">
+
+    <!-- Top-left -->
+    <p class="corner top-left">Bento's Playground</p>
+
+    <!-- Top-right -->
+    <p class="corner top-right">Builder in progress<br><span class="muted">Rio de Janeiro</span></p>
+
+    <!-- Title: screen readers read the aria-label, the letters are hidden from them.
+         --i is the letter's position, used for the staggered pop-in delay. -->
+    <h1 class="title" aria-label="Antonio Bento">
+      <span class="line" aria-hidden="true">
+        <span style="--i:0">A</span><span style="--i:1">N</span><span style="--i:2">T</span><span style="--i:3">O</span><span style="--i:4">N</span><span style="--i:5">I</span><span style="--i:6">O</span>
+      </span>
+      <span class="line" aria-hidden="true">
+        <span style="--i:7">B</span><span style="--i:8">E</span><span style="--i:9">N</span><span style="--i:10">T</span><span style="--i:11">O</span>
+      </span>
+    </h1>
+
+    <!-- Bottom-left -->
+    <p class="corner bottom-left">Computer science student in Rio, building small things to learn how to build bigger ones. Games, tools and experiments are coming. Pardon the dust.</p>
+
+    <!-- Bottom-right -->
+    <p class="corner bottom-right">
+      <a href="https://www.linkedin.com/in/antonio-bento-pereira/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+      <a href="https://github.com/antoniobentopereira" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </p>
+
+  </main>
 </body>
 </html>
