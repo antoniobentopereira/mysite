@@ -6,17 +6,17 @@ Spec: `.scratch/letter-portals/spec.md`. Phase states (from the prototype): `res
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** ready-for-human (built; waiting on card copy approval and the manual Chrome check)
 
-- [ ] Without JavaScript, N is a working link to VC Map (relative path, no leading slash).
-- [ ] The h1 is still announced as "Antonio Bento"; a visually hidden link "Norte: a VC map" exists and shows a focus ring on the N when focused.
-- [ ] Clicking N or activating the hidden link opens the simple Reveal and sets the URL hash to `#norte`.
-- [ ] Loading the homepage with `#norte` opens the Reveal directly; closing it keeps the visitor on the homepage.
-- [ ] ✕, Esc and Back each close the Reveal, clear the hash, and return focus to the Norte link.
-- [ ] Focus moves into the Reveal when it opens.
-- [ ] The page publishes the Reveal state (current Destination, phase, whether the fallback is used) for tests.
-- [ ] The Rest state looks and loads exactly as before (hover wiggle, colours, pop-in kept).
-- [ ] Card copy drafted and shown to Antonio for approval.
-- [ ] Playwright added as a dev-only tool (free, explained to Antonio); automated checks for the criteria above pass in Chrome; no console errors.
-- [ ] STATUS.md updated: VC Map linked from the homepage via the N portal.
-- [ ] Manual Chrome checklist handed to Antonio.
+- [x] Without JavaScript, N is a working link to VC Map (relative path, no leading slash).
+- [x] The h1 is still announced as "Antonio Bento"; a visually hidden link "Norte: a VC map" exists and shows a focus ring on the N when focused.
+- [x] Clicking N or activating the hidden link opens the simple Reveal and sets the URL hash to `#norte`.
+- [x] Loading the homepage with `#norte` opens the Reveal directly; closing it keeps the visitor on the homepage.
+- [x] ✕, Esc and Back each close the Reveal, clear the hash, and return focus to the Norte link.
+- [x] Focus moves into the Reveal when it opens.
+- [x] The page publishes the Reveal state (current Destination, phase, whether the fallback is used) for tests.
+- [x] The Rest state looks and loads exactly as before (hover wiggle, colours, pop-in kept).
+- [x] Card copy drafted and shown to Antonio for approval. (Approval pending.)
+- [x] Playwright added as a dev-only tool (free, explained to Antonio); automated checks for the criteria above pass in Chrome; no console errors.
+- [x] STATUS.md updated: VC Map linked from the homepage via the N portal.
+- [x] Manual Chrome checklist handed to Antonio.

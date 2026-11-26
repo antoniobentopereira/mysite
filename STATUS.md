@@ -5,16 +5,17 @@ High-level state of antoniobento.me. Details of each project live in its own rep
 _Last updated: 2026-11-26_
 
 ## Homepage
-- **v1:** typographic page (ANTONIO / BENTO, four corner texts). No project links yet.
-- **Next:** letter portals. Letters of the title become links to projects.
-  - First "N" in ANTONIO -> `/vc-map/` (title: "Norte: a VC map")
-  - "A" in ANTONIO -> About page (later)
+- **v1:** typographic page (ANTONIO / BENTO, four corner texts).
+- **Letter portals (in progress):**
+  - First "N" in ANTONIO -> `vc-map/` ("Norte: a VC map"). **Live as a simple Reveal** (brown screen, NORTE, card with link). 3D, Tokens and lever come in later tickets.
+  - "A" in ANTONIO -> About (later)
+- Automated checks: Playwright (dev only), `npm test`.
 
 ## Projects
 
 | Project | Version | Where it lives | On the site | Linked from homepage |
 |---|---|---|---|---|
-| VC Map | v1 (built) | `vc-map` repo, synced into `public/vc-map/` | committed, reachable at `/vc-map/` but not linked | no |
+| VC Map | v1 (built) | `vc-map` repo, synced into `public/vc-map/` | committed, reachable at `/vc-map/` | yes, via the N portal |
 
 ## Open items
 - Plan and build the homepage letter portals.
@@ -28,5 +29,4 @@ _Last updated: 2026-11-26_
     - [ ] Norte: folded map, compass (yellow), rising arrow, coin stack, rocket, term sheet, lightbulb, handshake, bar chart
     - [ ] Norte: star mascot + São Paulo flag (Norte's own files / official SVG)
     - [ ] All files light (aim < 200 KB each), same outline style
-- Link VC Map from the homepage (letter portal), then it is discoverable.
 - About page (not started).

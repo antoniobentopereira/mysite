@@ -122,6 +122,29 @@ body {
 .line:last-child span:nth-child(4):hover { color: var(--blue); }
 .line:last-child span:nth-child(5):hover { color: var(--yellow); }
 
+/* Portal letters: a link inside the letter's span, looking just like the letter */
+.title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Hidden portal links: invisible, but focusable and read by screen readers */
+.sr-nav a {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* When a hidden portal link has keyboard focus, ring its letter */
+body:has(.sr-nav a[data-dest="norte"]:focus-visible) .portal[data-dest="norte"] {
+  outline: 4px solid var(--blue);
+  outline-offset: 2px;
+  border-radius: 0.1em;
+}
+
 @keyframes pop-in {
   from { opacity: 0; transform: scale(0.3) translateY(0.2em); }
   to   { opacity: 1; transform: none; }

@@ -20,6 +20,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;800&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="portals/reveal.css">
+  <script type="module" src="portals/main.js"></script>
 </head>
 <body>
   <main class="page">
@@ -31,15 +33,23 @@
     <p class="corner top-right">Builder in progress<br><span class="muted">Rio de Janeiro</span></p>
 
     <!-- Title: screen readers read the aria-label, the letters are hidden from them.
-         --i is the letter's position, used for the staggered pop-in delay. -->
+         --i is the letter's position, used for the staggered pop-in delay.
+         The first N is a Portal letter: a plain link to VC Map without JavaScript,
+         the Norte Reveal with it. Keyboard users reach it via the hidden nav below. -->
     <h1 class="title" aria-label="Antonio Bento">
       <span class="line" aria-hidden="true">
-        <span style="--i:0">A</span><span style="--i:1">N</span><span style="--i:2">T</span><span style="--i:3">O</span><span style="--i:4">N</span><span style="--i:5">I</span><span style="--i:6">O</span>
+        <span style="--i:0">A</span><span style="--i:1" class="portal" data-dest="norte"><a href="vc-map/" tabindex="-1">N</a></span><span style="--i:2">T</span><span style="--i:3">O</span><span style="--i:4">N</span><span style="--i:5">I</span><span style="--i:6">O</span>
       </span>
       <span class="line" aria-hidden="true">
         <span style="--i:7">B</span><span style="--i:8">E</span><span style="--i:9">N</span><span style="--i:10">T</span><span style="--i:11">O</span>
       </span>
     </h1>
+
+    <!-- Portal links for keyboard and screen readers (visually hidden).
+         Focusing one draws a focus ring on its letter. -->
+    <nav class="sr-nav" aria-label="Portals">
+      <a href="vc-map/" data-dest="norte">Norte: a VC map</a>
+    </nav>
 
     <!-- Bottom-left -->
     <p class="corner bottom-left">Computer science student in Rio, building small things to learn how to build bigger ones. Games, tools and experiments are coming. Pardon the dust.</p>

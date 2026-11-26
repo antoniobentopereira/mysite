@@ -1,0 +1,13 @@
+{
+  "name": "mysite",
+  "private": true,
+  "description": "Dev-only tooling for antoniobento.me. Nothing here is deployed; the site is the static files in public/.",
+  "type": "module",
+  "scripts": {
+    "serve": "node tests/serve.js",
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.50.0"
+  }
+}

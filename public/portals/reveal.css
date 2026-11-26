@@ -1,0 +1,83 @@
+/* The Reveal (simple version): coloured full-screen layer, the Destination's word
+   and its card. Colours come from the Destination's settings block. */
+
+/* Corner texts step aside while a Reveal is up */
+.corner { transition: opacity 0.3s; }
+.revealing .corner { opacity: 0; }
+
+.reveal {
+  --paper: #fffdf5;
+  --k: #1d1a10;
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  align-items: center;
+  justify-items: center;
+  gap: 1rem;
+  padding: 4.5rem 0.75rem 0.75rem;
+  background: var(--reveal-bg);
+  opacity: 0;
+  transition: opacity 0.22s ease; /* keep in sync with FADE_MS in reveal.js */
+}
+.reveal.is-shown { opacity: 1; }
+
+.reveal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 3px solid var(--k);
+  background: var(--paper);
+  color: var(--k);
+  font: 800 1.1rem/1 system-ui, sans-serif;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 var(--k);
+}
+.reveal-close:focus-visible { outline: 4px solid var(--reveal-accent); outline-offset: 3px; }
+
+.reveal-word {
+  margin: 0;
+  font-weight: 800;
+  font-size: min(24vw, 22dvh);
+  line-height: 0.85;
+  letter-spacing: -0.02em;
+  color: var(--reveal-accent);
+  text-shadow: -2px 2px 0 var(--reveal-shade), -4px 4px 0 var(--reveal-shade), -6px 6px 0 var(--k);
+}
+
+.reveal-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 1rem 1.1rem;
+  background: var(--paper);
+  color: var(--ink);
+  border: 3px solid var(--k);
+  border-radius: 18px;
+  box-shadow: 8px 8px 0 var(--k);
+}
+.reveal-kicker {
+  margin: 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+.reveal-card h2 { margin: 0.25em 0 0.35em; font-size: 1.7rem; line-height: 1; font-weight: 800; }
+.reveal-summary { margin: 0 0 0.8em; font-size: 0.95rem; line-height: 1.4; }
+.reveal-plain { color: var(--muted); font-size: 0.85rem; }
+.reveal-plain:hover, .reveal-plain:focus-visible { color: var(--ink); }
+
+/* Wide screens: word on the left, card on the right */
+@media (min-width: 761px) {
+  .reveal {
+    grid-template-rows: none;
+    grid-template-columns: 1fr 1fr;
+    padding: 2rem 4vw;
+  }
+  .reveal-word { font-size: min(13vw, 30dvh); }
+  .reveal-card { justify-self: start; padding: 1.25rem 1.4rem; }
+}

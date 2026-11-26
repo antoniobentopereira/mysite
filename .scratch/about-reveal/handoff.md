@@ -29,6 +29,14 @@ Read first: `GLOSSARY.md`, `docs/adr/`, `.scratch/letter-portals/` (Norte spec +
 - Card / page text (prototype has a draft).
 - Book layout on phones (prototype opens upward like a notepad).
 
+## Built in Norte ticket 01 (reuse for About)
+
+- Each Destination is one settings block in `public/portals/destinations.js` (letter index, colours, Tokens, Hero, card, Enter control, URL). About = a new block.
+- Portal letter markup: the letter's span gets `class="portal" data-dest="<name>"` and wraps an `<a href="..." tabindex="-1">`; a matching hidden link goes in `.sr-nav` (focus ring on the letter is CSS via `:has()` in `style.css`, one rule per Destination).
+- About's no-JS link: needs deciding (LinkedIn? `#about` does nothing without JS).
+- Reveal controller (`public/portals/reveal.js`) publishes `data-reveal-phase / -destination / -fallback` on `<html>`.
+
 ## Change log
 
 - 2026-11-26: created from the Norte grilling session.
+- 2026-11-26: Norte ticket 01 built; added the reusable pattern above.
