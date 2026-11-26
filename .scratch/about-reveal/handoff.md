@@ -36,7 +36,14 @@ Read first: `GLOSSARY.md`, `docs/adr/`, `.scratch/letter-portals/` (Norte spec +
 - About's no-JS link: needs deciding (LinkedIn? `#about` does nothing without JS).
 - Reveal controller (`public/portals/reveal.js`) publishes `data-reveal-phase / -destination / -fallback` on `<html>`.
 
+## Built in Norte ticket 02 (reuse for About)
+
+- Drag-or-tap Enter control: `public/portals/lever.js` (`wireLever(button, onFire)` handles drag threshold, tap, spring-back, Enter/Space). The About ribbon can reuse the same pattern (pull = drag down instead of forward).
+- The Reveal builds the Enter control from `enter.kind` in the Destination block; firing calls the controller's launch (phase `leaving`, then go to the Destination URL). About opens LinkedIn in a new tab, so its launch will need a "new tab" variant that stays `open`.
+- Back from the Destination: a fresh load of `#…` opens instantly; a page restored from the back/forward cache resumes from `leaving` to `open` and resets the control.
+
 ## Change log
 
 - 2026-11-26: created from the Norte grilling session.
 - 2026-11-26: Norte ticket 01 built; added the reusable pattern above.
+- 2026-11-26: Norte ticket 02 built (lever Enter control); notes above.

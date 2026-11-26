@@ -35,7 +35,7 @@ export const DESTINATIONS = {
       title: 'Norte: a VC map',
       summary: 'Norte means north. This map shows where it points: the startups it backs, and what they have in common.',
     },
-    // Enter control: the arcade lever (ticket 02). Until then, only the plain link.
+    // Enter control: the arcade lever (lever.js). The card also keeps a plain link.
     enter: { kind: 'lever', label: 'Enter Norte: a VC map' },
     // Destination link: relative, no leading slash
     url: 'vc-map/',

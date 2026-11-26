@@ -14,8 +14,10 @@
 // 3D Reveal arrives (ticket 04).
 import { destinationFor } from './destinations.js';
 import { isNewTabClick } from './links.js';
+import { buildLever, wireLever } from './lever.js';
 
 const FADE_MS = 220; // keep in sync with the transition in reveal.css
+const LAUNCH_MS = 300; // the lever's push is seen before the page goes to the Destination
 
 const root = document.documentElement;
 let phase = 'rest';
@@ -23,6 +25,7 @@ let current = null; // name of the open Destination
 let stage = null; // the Reveal's element
 let timer = 0;
 let closing = null; // promise while closing
+let lever = null; // the open Reveal's Enter control
 
 publish();
 
@@ -83,9 +86,20 @@ export function leave() {
   publish();
 }
 
+/** Fire the Enter control: launch, then go to the Destination. */
+function launch() {
+  if (phase === 'leaving') return; // already launching (a second press, key repeat)
+  if (phase !== 'open') { lever?.reset(); return; }
+  const url = destinationFor(current).url;
+  leave();
+  timer = setTimeout(() => location.assign(url), LAUNCH_MS);
+}
+
 /** The page came back from the Destination (browser Back): show the Reveal again, no intro. */
 export function resume() {
   if (phase !== 'leaving') return;
+  clearTimeout(timer); // restored mid-launch: don't leave again
+  lever?.reset();
   phase = 'open';
   publish();
 }
@@ -102,6 +116,7 @@ export function close() {
     setTimeout(() => {
       stage.remove();
       stage = null;
+      lever = null;
       current = null;
       closing = null;
       document.querySelector('main')?.removeAttribute('inert');
@@ -131,8 +146,16 @@ function buildSimpleStage(name, dest, onRequestClose) {
       <p class="reveal-kicker"></p>
       <h2></h2>
       <p class="reveal-summary"></p>
-      <a class="reveal-plain">or just open it →</a>
+      <div class="reveal-foot">
+        <a class="reveal-plain">or just open it →</a>
+      </div>
     </section>`;
+  const foot = el.querySelector('.reveal-foot');
+  if (dest.enter?.kind === 'lever') {
+    const control = buildLever(dest.enter.label);
+    foot.prepend(control);
+    lever = wireLever(control.querySelector('.lever'), launch);
+  }
   el.querySelector('.reveal-word').textContent = dest.word;
   el.querySelector('.reveal-kicker').textContent = dest.card.kicker;
   el.querySelector('h2').textContent = dest.card.title;
@@ -143,7 +166,12 @@ function buildSimpleStage(name, dest, onRequestClose) {
   plain.addEventListener('click', (e) => { if (!isNewTabClick(e)) leave(); });
 
   el.querySelector('.reveal-close').addEventListener('click', onRequestClose);
-  // A click or tap during the intro skips to the end
-  el.addEventListener('pointerdown', skip, true);
+  // A click or tap during the intro only skips to the end (it doesn't also
+  // press the lever, say)
+  el.addEventListener('pointerdown', (e) => {
+    if (phase !== 'intro') return;
+    skip();
+    e.stopPropagation();
+  }, true);
   return el;
 }

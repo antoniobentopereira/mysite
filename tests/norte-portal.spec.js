@@ -127,6 +127,114 @@ test.describe('closing the Norte Reveal', () => {
   });
 });
 
+test.describe('the lever (Enter control)', () => {
+  const lever = (page) => page.getByRole('button', { name: 'Enter Norte: a VC map' });
+  const openNorte = async (page) => {
+    await page.goto('./');
+    await portalN(page).click();
+    await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'open');
+  };
+
+  for (const key of ['Enter', 'Space']) {
+    test(`${key} on the focused lever launches into VC Map`, async ({ page }) => {
+      await openNorte(page);
+      await lever(page).focus();
+      await page.keyboard.press(key);
+      await expect(page).toHaveURL(/\/vc-map\/$/);
+    });
+  }
+
+  // Launch with the lever, then Back: the Reveal is open again, with no intro
+  // and the lever upright. `restored` says whether Chrome brought the page back
+  // from its back/forward cache (frozen mid-launch) or loaded it fresh.
+  const launchAndComeBack = async (page, restored) => {
+    // Record every phase the homepage publishes. A page restored from the
+    // cache starts a fresh record, like a freshly loaded one.
+    await page.addInitScript(() => {
+      window.phasesSeen = [];
+      const note = () => window.phasesSeen.push(document.documentElement.dataset.revealPhase);
+      new MutationObserver(note).observe(document, { subtree: true, attributeFilter: ['data-reveal-phase'] });
+      addEventListener('pageshow', (e) => { window.restored = e.persisted; if (e.persisted) window.phasesSeen = []; });
+    });
+    await openNorte(page);
+    await lever(page).focus();
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(/\/vc-map\/$/);
+    await page.goBack({ waitUntil: 'commit' }); // a page restored from the cache fires no load event
+    await expect(page).toHaveURL(/#norte$/);
+    await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'open');
+    expect(await page.evaluate(() => window.restored)).toBe(restored);
+    expect(await page.evaluate(() => window.phasesSeen)).not.toContain('intro');
+    await expect(lever(page)).toBeVisible();
+    await expect(lever(page)).toHaveCSS('--tilt', '0deg');
+  };
+
+  test('Back from VC Map shows the Reveal already open, without the intro', async ({ page }) => {
+    await launchAndComeBack(page, false);
+  });
+
+  test('with the back/forward cache on, Back restores the Reveal open, not stuck mid-launch', async ({ playwright, baseURL }) => {
+    // Playwright turns Chrome's back/forward cache off; real visitors have it on
+    const browser = await playwright.chromium.launch({ channel: 'chrome', ignoreDefaultArgs: ['--disable-back-forward-cache'] });
+    try {
+      const page = await browser.newPage({ baseURL });
+      page.on('console', (m) => {
+        if (m.type() === 'error' && !m.location().url.endsWith('/favicon.ico')) errors.push(`${m.text()} (${m.location().url})`);
+      });
+      page.on('pageerror', (e) => errors.push(e.message));
+      await launchAndComeBack(page, true);
+    } finally {
+      await browser.close();
+    }
+  });
+
+  test('a tap on the lever during the intro only skips the intro', async ({ page }) => {
+    await page.goto('./');
+    await portalN(page).click();
+    await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'intro');
+    await lever(page).click();
+    await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'open');
+    await page.waitForTimeout(600); // longer than a launch would take
+    await expect(page).toHaveURL(/#norte$/);
+  });
+
+  test('a tap on the lever launches into VC Map', async ({ page }) => {
+    await openNorte(page);
+    await lever(page).click();
+    await expect(page).toHaveURL(/\/vc-map\/$/);
+  });
+
+  // Drag the ball by (dx, dy), in small steps like a real hand
+  const drag = async (page, dx, dy) => {
+    const box = await lever(page).boundingBox();
+    const x = box.x + box.width / 2, y = box.y + box.height / 2;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x + dx, y + dy, { steps: 10 });
+    await page.mouse.up();
+  };
+
+  test('dragging the lever forward past its threshold launches into VC Map', async ({ page }) => {
+    await openNorte(page);
+    await drag(page, 70, -70);
+    await expect(page).toHaveURL(/\/vc-map\/$/);
+  });
+
+  test('letting go of the lever early springs it back and stays on the Reveal', async ({ page }) => {
+    await openNorte(page);
+    await drag(page, 20, -20);
+    await expect(lever(page)).toHaveCSS('--tilt', '0deg');
+    await page.waitForTimeout(600); // longer than a launch would take
+    await expect(page).toHaveURL(/#norte$/);
+    await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'open');
+  });
+
+  test('the card keeps its plain "or just open it" link', async ({ page }) => {
+    await openNorte(page);
+    await expect(page.getByRole('dialog').getByRole('link', { name: /or just open it/ })).toHaveAttribute('href', 'vc-map/');
+  });
+});
+
 test('the Rest state keeps its pop-in and hover wiggle', async ({ page }) => {
   await page.goto('./');
   const n = page.locator('.title .portal[data-dest="norte"]');
