@@ -13,23 +13,36 @@ portfolio. Visitors should think: "curious, creative, actually builds things."
   complicate the homepage.
 
 ## Technical rules
-- Plain HTML, CSS and JavaScript. One folder per experiment.
-- No framework, build tool, database, login or backend unless I approve it.
+- Use the right tool for each experiment. Plain HTML, CSS and JavaScript is
+  the default for simple ones. Frameworks, build tools, libraries (npm or
+  bundled), WebGL and so on are all fine when the experiment needs them.
+  Pick the simplest option that works and say why.
 - Hosting: Cloudflare (free). Domain: antoniobento.me (Cloudflare).
-- Cost target: as close to zero as possible. Never add paid services.
-- Never put API keys or secrets in code. This repo is public.
-- Ask before adding any dependency or tool.
+- Cost: free first. Use free tiers only (e.g. Cloudflare Workers, Pages,
+  KV, D1). Never add a paid service or anything that can bill me
+  automatically without asking me first. Complex does not mean expensive.
+- Never put API keys or secrets in code. This repo is public. Use
+  Cloudflare environment secrets for anything private.
+- Keep the repo and the site reasonably light. Avoid huge files, and tell
+  me before adding anything that makes the repo grow a lot.
+- Tell me in plain words when you add a dependency or tool: what it is,
+  why, and that it is free. No need to wait for permission if it is free.
 
 ## Projects
 Every experiment follows this contract:
-- Self-contained folder: it works when copied into public/<project-name>/.
-- Has its own index.html.
-- Relative paths only, never a leading slash.
-- No build step.
-- Any library must be a single file saved inside the project folder,
-  never loaded from a CDN.
-- Uses the homepage's palette variables and font (see Design).
-- Includes a short note: why it was built, and that it was built with AI.
+- Lives in public/<project-name>/ with its own index.html at the root.
+- Relative paths only, never a leading slash, so it works under a subpath.
+- Works as static files when deployed: no server needed unless it is a
+  free Cloudflare Worker.
+- Source can live in this repo or in its own repo. If its output is
+  generated (a build), only the generated output goes in public/<name>/.
+  Never edit generated output by hand. Fix the source, then rebuild or
+  re-sync.
+- Prefer the homepage font and palette (see Design) but an experiment may
+  have its own look when the idea calls for it.
+- Its note (why I built it, what I learned, "built with AI") can live
+  inside the experiment itself. Do not duplicate it elsewhere.
+- Overall state of the site is tracked in STATUS.md.
 
 ## Design
 - Font: Bricolage Grotesque (Google Fonts), system-ui as fallback.
@@ -43,12 +56,23 @@ Every experiment follows this contract:
   - Mobile first: it must work on small screens before big ones.
   - The name stays real text in an h1 (aria-label "Antonio Bento").
   - Every letter of the title is its own span.
-  - No heavy assets (no big images, videos or libraries).
+  - Keep the homepage light: no big images or videos.
   - Respect prefers-reduced-motion: no animations in that case.
-  - All interaction on this homepage stays CSS-only for now.
+  - Prefer CSS for homepage interaction. Add JavaScript only when CSS
+    can't do it well.
 
 ## How to work with me
 - I am a beginner. Explain things in plain language, no unnecessary jargon.
 - Work in small steps. Explain what you will change before changing it.
 - Be opinionated: recommend the simplest option and say why.
 - Keep answers short. My Claude plan has limited usage.
+
+## Agent skills
+
+### Issue tracker
+
+Issues are markdown files under `.scratch/<feature>/`. See `docs/agents/issue-tracker.md`.
+
+### Domain docs
+
+Single-context: one `GLOSSARY.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.
