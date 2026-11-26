@@ -6,7 +6,7 @@ Spec: `.scratch/letter-portals/spec.md`. Phase states (from the prototype): `res
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-human (built; waiting on the manual Chrome check)
+**Status:** done
 
 - [x] Without JavaScript, N is a working link to VC Map (relative path, no leading slash).
 - [x] The h1 is still announced as "Antonio Bento"; a visually hidden link "Norte: a VC map" exists and shows a focus ring on the N when focused.
@@ -21,8 +21,16 @@ Spec: `.scratch/letter-portals/spec.md`. Phase states (from the prototype): `res
 - [x] STATUS.md updated: VC Map linked from the homepage via the N portal.
 - [x] Manual Chrome checklist handed to Antonio.
 
-## Open with Antonio (2026-11-26)
+## Antonio's checks
 
-- Card copy approved (2026-11-26): "Norte means north. This map shows where it points: the startups it backs, and what they have in common." (kicker "Portal · N").
-- Reduced motion: CLAUDE.md says "no animations", spec asks for a "quick fade". Kept the 0.22 s opacity fade (no movement). Antonio to decide whether to drop it for reduced-motion visitors.
-- Manual Chrome check: run `node tests/serve.js`, open http://localhost:8417 (PowerShell blocks `npm`; use `npm.cmd` or allow scripts).
+Tick each one when done. Run `node tests/serve.js` and open http://localhost:8417.
+
+- [x] Card copy approved: "Norte means north. This map shows where it points: the startups it backs, and what they have in common." (label "Portal · N")
+- [x] The homepage looks and loads exactly as before.
+- [x] Clicking N fades in the brown screen; the card looks right on a wide and a narrow window.
+- [x] ✕, Esc and Back each return to ANTONIO BENTO.
+- [x] Tab once: a blue ring appears on the N; Enter opens the Reveal.
+- [x] Opening http://localhost:8417/#norte directly, then ✕, stays on the homepage.
+- [x] "or just open it →" goes to VC Map; Back returns.
+
+Note: the quick fade (no movement) stays on for reduced-motion visitors too.
