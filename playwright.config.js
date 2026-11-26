@@ -1,7 +1,9 @@
 // Playwright (dev-only): opens the homepage in Chrome and checks the key behaviours.
 import { defineConfig } from '@playwright/test';
 
-const PORT = 8417; // not 4173: Vite preview (VC Map) often uses that one
+// Not 4173: Vite preview (VC Map) often uses that one. 8418, so tests can run
+// while `node tests/serve.js` (8417) is open for manual checks.
+const PORT = 8418;
 
 export default defineConfig({
   testDir: 'tests',

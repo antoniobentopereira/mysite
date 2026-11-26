@@ -33,7 +33,7 @@ export const DESTINATIONS = {
     card: {
       kicker: 'Portal · N',
       title: 'Norte: a VC map',
-      summary: 'Every startup Norte has backed, on one map you can explore: what each one builds, and why it fits Norte’s way of investing.',
+      summary: 'Norte means north. This map shows where it points: the startups it backs, and what they have in common.',
     },
     // Enter control: the arcade lever (ticket 02). Until then, only the plain link.
     enter: { kind: 'lever', label: 'Enter Norte: a VC map' },
