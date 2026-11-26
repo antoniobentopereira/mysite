@@ -20,3 +20,9 @@ Spec: `.scratch/letter-portals/spec.md`. Phase states (from the prototype): `res
 - [x] Playwright added as a dev-only tool (free, explained to Antonio); automated checks for the criteria above pass in Chrome; no console errors.
 - [x] STATUS.md updated: VC Map linked from the homepage via the N portal.
 - [x] Manual Chrome checklist handed to Antonio.
+
+## Open with Antonio (2026-11-26)
+
+- Card copy awaiting approval: "Every startup Norte has backed, on one map you can explore: what each one builds, and why it fits Norte's way of investing." (plus kicker "Portal · N").
+- Reduced motion: CLAUDE.md says "no animations", spec asks for a "quick fade". Kept the 0.22 s opacity fade (no movement). Antonio to decide whether to drop it for reduced-motion visitors.
+- Manual Chrome check: run `node tests/serve.js`, open http://localhost:8417 (PowerShell blocks `npm`; use `npm.cmd` or allow scripts).
