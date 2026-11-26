@@ -18,6 +18,7 @@ _Last updated: 2026-11-26_
 
 ## Open items
 - Plan and build the homepage letter portals.
+  - Phase 1 = Norte (N) portal: spec + 11 tickets in `.scratch/letter-portals/`. About Reveal comes after (`.scratch/about-reveal/handoff.md`).
   - Prototype (P1: Pile / Zero-g / Toy box) lives in `prototypes/portals/`, not deployed.
   - **Before production: replace stand-in Token stickers with final art.** Checklist:
     - [ ] About: basketball, tennis ball, speargun + fish, beer, laptop `</>`, green portal swirl, hang glider, bento box (draw or generate, one consistent style)
