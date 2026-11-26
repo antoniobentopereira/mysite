@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PROTOTYPE · Letter portals</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;800&display=swap" rel="stylesheet">
+  <!-- Reuse the real homepage styles, then add prototype-only styles below -->
+  <link rel="stylesheet" href="../../public/style.css">
+  <style>
+    :root { --brown: #4a2700; --nyellow: #f2c200; --nshade: #a87400; --paper: #fffdf5; --k: #1d1a10; }
+
+    /* Room for the prototype switcher at the top */
+    .page { padding-top: 3.25rem; }
+
+    /* ---------- Rest state: portal letters ---------- */
+    .title .portal { cursor: pointer; }
+    .title .portal.focused { outline: 4px solid var(--blue); outline-offset: 2px; border-radius: 0.1em; }
+    .title .portal { --zc: var(--red); }
+    .title .portal[data-dest="norte"] { --zc: var(--blue); }
+
+    /* Idle "charge": three soft, cute moves, picked at random by JS.
+       Colour eases in and out gently; motion is small and bouncy. */
+    .title .portal { transform-origin: 50% 100%; }
+    .title .portal.zap-hop    { animation: zap-hop 1.1s cubic-bezier(0.45, 0, 0.3, 1); }
+    .title .portal.zap-glow   { animation: zap-glow 1.6s ease-in-out; }
+    .title .portal.zap-wobble { animation: zap-wobble 1.3s ease-in-out; }
+    @keyframes zap-hop {        /* little squash, hop, soft landing */
+      0%   { transform: none; }
+      15%  { transform: scale(1.05, 0.95); }
+      40%  { transform: translateY(-0.06em) scale(0.98, 1.03); color: var(--zc); }
+      65%  { transform: scale(1.03, 0.97); }
+      82%  { transform: scale(0.99, 1.01); }
+      100% { transform: none; }
+    }
+    @keyframes zap-glow {       /* slow warm breath of colour */
+      0%, 100% { transform: none; text-shadow: 0 0 0 transparent; }
+      45%  { transform: scale(1.03); color: var(--zc); text-shadow: 0 0 0.12em color-mix(in srgb, var(--yellow) 55%, transparent); }
+    }
+    @keyframes zap-wobble {     /* gentle jelly sway */
+      0%, 100% { transform: none; }
+      20%  { transform: rotate(-3deg); color: var(--zc); }
+      45%  { transform: rotate(2.5deg); }
+      70%  { transform: rotate(-1.2deg); }
+      85%  { transform: rotate(0.5deg); }
+    }
+    .revealing .title .line span { visibility: hidden; }
+    .corner { transition: opacity 0.3s; }
+    .revealing .corner { opacity: 0; }
+
+    /* Links for keyboard + screen readers (visually hidden) */
+    .sr-nav a { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+    /* ---------- Prototype switcher ---------- */
+    .switcher {
+      position: fixed; top: 0.6rem; left: 50%; transform: translateX(-50%); z-index: 50;
+      display: flex; gap: 2px; padding: 3px; border-radius: 999px; background: var(--k);
+      font: 500 0.75rem/1 "Bricolage Grotesque", system-ui;
+    }
+    .switcher button { font: inherit; color: #fff; background: none; border: 0; padding: 0.45rem 0.75rem; border-radius: 999px; cursor: pointer; white-space: nowrap; }
+    .switcher button[aria-pressed="true"] { background: var(--yellow); color: var(--k); }
+
+    /* ---------- Stage (the Reveal) ---------- */
+    #stage { position: fixed; inset: 0; z-index: 10; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none; }
+    #stage[hidden] { display: none; }
+    #burst { position: absolute; inset: 0; background: var(--c); }
+    #tokens { position: absolute; inset: 0; z-index: 1; }
+    #hero { position: absolute; inset: 0; z-index: 2; perspective: 1800px; pointer-events: none; }
+    .ui { pointer-events: auto; }
+    .instant, .instant * { transition: none !important; }
+
+    .close {
+      position: absolute; top: 3.2rem; right: 1rem; z-index: 5; width: 44px; height: 44px; border-radius: 50%;
+      border: 3px solid var(--k); background: var(--paper); color: var(--k); font: 800 1.1rem/1 system-ui; cursor: pointer;
+      box-shadow: 3px 3px 0 var(--k);
+    }
+
+    /* Tokens */
+    .token { position: absolute; left: 0; top: 0; will-change: transform; perspective: 400px; }
+    .tface { position: absolute; inset: 0; display: grid; place-items: center; }
+    .tface svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(3px 4px 0 rgba(0,0,0,0.22)); }
+    .ltr { font-weight: 800; line-height: 0.85; text-transform: uppercase; letter-spacing: -0.03em; }
+
+    /* Word that spells the Destination */
+    .w { display: inline-block; opacity: 0; transform: translateY(0.35em) scale(0.4); transition: opacity 0.3s, transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1); transition-delay: calc(var(--j) * 70ms); }
+    .show .w { opacity: 1; transform: none; }
+
+    /* ---------- About: the 3D book ---------- */
+    .book { position: absolute; transform-style: preserve-3d; }
+    .book .fly { position: absolute; inset: 0; transform-style: preserve-3d; }
+    .bf { position: absolute; box-sizing: border-box; }
+    .bf-page { inset: 0; background: var(--paper); border: 3px solid var(--k); border-radius: 2px 10px 10px 2px; }
+    .bf-back { inset: 0; background: #a81b22; border: 3px solid var(--k); border-radius: 2px 10px 10px 2px; transform: translateZ(calc(var(--d) * -1)); }
+    .bf-spine { left: 0; top: 0; width: var(--d); height: 100%; background: #a81b22; border: 3px solid var(--k); transform-origin: left center; transform: rotateY(90deg); }
+    .bf-edge-r, .bf-edge-t, .bf-edge-b { background: repeating-linear-gradient(90deg, #f3ecd6 0 3px, #d9cfb2 3px 4px); border: 2px solid var(--k); }
+    .bf-edge-r { left: 0; top: 0; width: var(--d); height: 100%; transform-origin: left center; transform: translateX(var(--w)) rotateY(90deg); background: repeating-linear-gradient(0deg, #f3ecd6 0 3px, #d9cfb2 3px 4px); background: repeating-linear-gradient(90deg, #f3ecd6 0 3px, #d9cfb2 3px 4px); }
+    .bf-edge-t { left: 0; top: 0; width: 100%; height: var(--d); transform-origin: center top; transform: rotateX(-90deg); }
+    .bf-edge-b { left: 0; top: 100%; width: 100%; height: var(--d); transform-origin: center top; transform: rotateX(-90deg); }
+
+    .cover { position: absolute; inset: 0; transform-style: preserve-3d; transform: translateZ(4px); transition: transform 0.9s cubic-bezier(0.6, 0.05, 0.25, 1.12); }
+    .book.wide .cover { transform-origin: left center; }
+    .book.narrow .cover { transform-origin: center top; }
+    .book.wide.open .cover { transform: translateZ(4px) rotateY(-180deg); }
+    .book.narrow.open .cover { transform: translateZ(4px) rotateX(180deg); }
+    .book.closing .cover { transition-duration: 0.5s; }
+    .cover-front, .cover-back { position: absolute; inset: 0; box-sizing: border-box; backface-visibility: hidden; -webkit-backface-visibility: hidden; border: 3px solid var(--k); border-radius: 2px 10px 10px 2px; }
+    .cover-front { background: var(--red); color: var(--bg); display: grid; place-items: center; font-weight: 800; font-size: calc(var(--h) * 0.72); line-height: 0.85; }
+    .cover-back { background: var(--paper); display: grid; place-content: center; text-align: center; }
+    .book.wide .cover-back { transform: rotateY(180deg); }
+    .book.narrow .cover-back { transform: rotateX(180deg); }
+    .cover-back .word { margin: 0; font-weight: 800; line-height: 0.85; letter-spacing: -0.03em; font-size: calc(var(--w) * 0.24); }
+    .cover-back .word .w:nth-child(1) { color: var(--red); }
+    .cover-back .word .w:nth-child(2) { color: var(--purple); }
+    .cover-back .word .w:nth-child(3) { color: var(--blue); }
+    .cover-back .word .w:nth-child(4) { color: var(--orange); }
+    .cover-back .word .w:nth-child(5) { color: var(--green); }
+    .cover-back .sub { margin: 0.6em 0 0; color: var(--muted); font-size: max(12px, calc(var(--h) * 0.04)); }
+
+    .page-inner { padding: calc(var(--h) * 0.08) calc(var(--w) * 0.1); opacity: 0; transition: opacity 0.4s 0.1s; font-size: max(12px, calc(var(--h) * 0.038)); line-height: 1.4; color: var(--ink); }
+    .book.show .page-inner { opacity: 1; }
+    .page-inner h3 { margin: 0.2em 0 0.4em; font-size: 2.1em; line-height: 1; font-weight: 800; }
+    .page-inner p { margin: 0 0 0.6em; }
+    .kicker { text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.8em; color: var(--muted); margin: 0; }
+    .draft { color: var(--muted); font-style: italic; font-size: 0.85em; }
+
+    /* Ribbon bookmark = the About Enter control */
+    .ribbon {
+      position: absolute; top: 100%; right: 16%; width: 38px; height: calc(70px + var(--pull, 0px)); padding: 0 0 18px;
+      background: var(--yellow); border: 3px solid var(--k); border-top: 0; cursor: grab; touch-action: none;
+      clip-path: polygon(-5% 0, 105% 0, 105% 100%, 50% calc(100% - 16px), -5% 100%);
+      transform-origin: top; transform: scaleY(0); transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+      font: 800 10px/1 "Bricolage Grotesque", system-ui; color: var(--k); writing-mode: vertical-rl; letter-spacing: 0.15em;
+    }
+    .ribbon.dragging { transition: none; cursor: grabbing; }
+    .book.ribbon-on .ribbon { transform: scaleY(1); }
+    .ribbon-hint { position: absolute; top: calc(100% + 10px); right: calc(16% + 48px); font-size: 12px; color: var(--k); opacity: 0; transition: opacity 0.4s 0.3s; white-space: nowrap; }
+    .book.ribbon-on .ribbon-hint { opacity: 1; }
+
+    /* ---------- Norte: extruded N -> rising arrow ---------- */
+    .arrow-box { position: absolute; }
+    .arrow-box .fly { position: absolute; inset: 0; transform-origin: 35% 57.5%; }
+    .arrow { width: 100%; height: 100%; overflow: visible; }
+    .arrow .stem, .arrow .tail { fill: none; stroke-linejoin: miter; stroke-linecap: butt; }
+    .arrow .ex .stem, .arrow .ex .tail { stroke: var(--nshade); stroke-width: 26; }
+    .arrow .ex .head { fill: var(--nshade); }
+    .arrow .ol .stem, .arrow .ol .tail { stroke: var(--k); stroke-width: 32; }
+    .arrow .ol .head { fill: var(--k); stroke: var(--k); stroke-width: 6; stroke-linejoin: round; }
+    .arrow .tp .stem, .arrow .tp .tail { stroke: var(--nyellow); stroke-width: 24; }
+    .arrow .tp .head { fill: var(--nyellow); }
+    .arrow .tail { stroke-dasharray: 1 1; stroke-dashoffset: 1; transition: stroke-dashoffset 0.5s cubic-bezier(0.6, 0, 0.3, 1); }
+    .arrow .head { transform: scale(0); transform-box: fill-box; transform-origin: center; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s; }
+    .grown .arrow .tail { stroke-dashoffset: 0; }
+    .grown .arrow .head { transform: scale(1); }
+
+    .norte .word { position: absolute; margin: 0; transform: translateX(-50%); white-space: nowrap; font-weight: 800; line-height: 0.85; letter-spacing: -0.02em; color: var(--nyellow);
+      text-shadow: -1px 1px 0 var(--nshade), -2px 2px 0 var(--nshade), -3px 3px 0 var(--nshade), -4px 4px 0 var(--nshade), -5px 5px 0 var(--nshade), -6px 6px 0 var(--k); }
+
+    .card {
+      position: absolute; box-sizing: border-box; padding: 1.25rem 1.4rem; background: var(--paper); color: var(--ink);
+      border: 3px solid var(--k); border-radius: 18px; box-shadow: 8px 8px 0 var(--k);
+      opacity: 0; translate: 0 30px; transition: opacity 0.4s, translate 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .show .card { opacity: 1; translate: 0 0; }
+    .norte.wide .card { left: 56%; top: 50%; transform: translateY(-50%); width: min(400px, 38vw); }
+    .norte.narrow .card { left: 12px; right: 12px; bottom: 12px; padding: 1rem 1.1rem; }
+    .card h3 { margin: 0.25em 0 0.35em; font-size: 1.7rem; line-height: 1; font-weight: 800; }
+    .card p { margin: 0 0 0.6em; font-size: 0.95rem; line-height: 1.4; }
+    .card-foot { display: flex; align-items: flex-end; gap: 1rem; margin-top: 0.5rem; }
+    .plain { color: var(--muted); font-size: 0.85rem; }
+
+    /* Arcade lever = the Norte Enter control */
+    .lever { position: relative; flex: none; width: 110px; height: 104px; padding: 0; background: none; border: 0; cursor: grab; touch-action: none; }
+    .lever-box { position: absolute; left: 0; right: 0; bottom: 0; height: 40px; border: 3px solid var(--k); border-radius: 8px; background: linear-gradient(var(--paper) 0 38%, var(--nyellow) 38%); }
+    .lever-box::before, .lever-box::after { content: ""; position: absolute; top: -12px; width: 14px; height: 14px; border: 3px solid var(--k); border-radius: 50%; background: var(--orange); }
+    .lever-box::before { left: 10px; } .lever-box::after { left: 30px; background: var(--red); }
+    .lever-stick { position: absolute; left: 50%; bottom: 26px; width: 12px; height: 56px; margin-left: 8px; background: var(--nshade); border: 3px solid var(--k); border-radius: 6px; transform-origin: 50% 100%; transform: rotate(var(--tilt, 0deg)); transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .lever.dragging .lever-stick { transition: none; }
+    .lever-ball { position: absolute; left: 50%; top: -26px; width: 34px; height: 34px; margin-left: -17px; border-radius: 50%; background: var(--red); border: 3px solid var(--k); }
+    .lever-label { font: 800 0.75rem/1.2 "Bricolage Grotesque", system-ui; text-transform: uppercase; letter-spacing: 0.08em; }
+
+    /* ---------- Tuning panel (prototype only) ---------- */
+    .tune {
+      position: fixed; left: 0.6rem; bottom: 0.6rem; z-index: 55; width: min(300px, calc(100vw - 1.2rem));
+      max-height: calc(100dvh - 4rem); overflow: auto; background: var(--k); color: #fff; border-radius: 12px;
+      font: 500 0.75rem/1.2 "Bricolage Grotesque", system-ui;
+    }
+    .tune summary { cursor: pointer; padding: 0.55rem 0.8rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+    .tune-body { padding: 0 0.8rem; display: grid; gap: 0.55rem; }
+    .tune label { display: grid; grid-template-columns: 1fr auto; gap: 0.2rem 0.5rem; }
+    .tune[hidden] { display: none; }
+    .tune output { color: var(--yellow); font-variant-numeric: tabular-nums; }
+    .tune small { grid-column: 1 / -1; color: #b9b9a8; font-size: 0.7rem; line-height: 1.3; }
+    .tune summary::after { content: "  · press T to hide"; font-weight: 500; text-transform: none; letter-spacing: 0; color: #b9b9a8; }
+    .tune input { grid-column: 1 / -1; width: 100%; accent-color: var(--yellow); }
+    .tune-actions { display: flex; gap: 0.4rem; padding: 0.7rem 0.8rem 0.8rem; }
+    .tune-actions button { font: inherit; flex: 1; padding: 0.45rem 0.3rem; border: 0; border-radius: 8px; background: #fff; color: var(--k); cursor: pointer; }
+    .tune-actions button[data-act="replay"] { background: var(--yellow); }
+
+    .toast { position: fixed; left: 50%; bottom: 1.25rem; z-index: 60; transform: translate(-50%, 150%); padding: 0.7rem 1rem; border-radius: 12px; background: var(--k); color: #fff; font-size: 0.9rem; transition: transform 0.35s; max-width: 90vw; }
+    .toast.on { transform: translate(-50%, 0); }
+
+    @media (prefers-reduced-motion: reduce) {
+      #stage *, #stage { transition: none !important; }
+      #stage { animation: fade 0.2s; }
+      @keyframes fade { from { opacity: 0; } }
+    }
+  </style>
+</head>
+<body>
+  <div class="switcher" role="group" aria-label="Prototype version">
+    <button type="button" data-mode="zerog">P1b Zero‑g</button>
+    <button type="button" data-mode="toy">P1c Toy box</button>
+  </div>
+
+  <main class="page">
+    <p class="corner top-left">Bento's Playground</p>
+    <p class="corner top-right">Builder in progress<br><span class="muted">Rio de Janeiro</span></p>
+
+    <h1 class="title" aria-label="Antonio Bento">
+      <span class="line" aria-hidden="true">
+        <span style="--i:0" class="portal" data-dest="about">A</span><span style="--i:1" class="portal" data-dest="norte">N</span><span style="--i:2">T</span><span style="--i:3">O</span><span style="--i:4">N</span><span style="--i:5">I</span><span style="--i:6">O</span>
+      </span>
+      <span class="line" aria-hidden="true">
+        <span style="--i:7">B</span><span style="--i:8">E</span><span style="--i:9">N</span><span style="--i:10">T</span><span style="--i:11">O</span>
+      </span>
+    </h1>
+
+    <nav class="sr-nav" aria-label="Portals">
+      <a href="#about" data-for="about">About</a>
+      <a href="#norte" data-for="norte">Norte: a VC map</a>
+    </nav>
+
+    <p class="corner bottom-left">Computer science student in Rio, building small things to learn how to build bigger ones. Games, tools and experiments are coming. Pardon the dust.</p>
+    <p class="corner bottom-right">
+      <a href="https://www.linkedin.com/in/antonio-bento-pereira/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+      <a href="https://github.com/antoniobentopereira" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </p>
+  </main>
+
+  <div id="stage" hidden>
+    <div id="burst"></div>
+    <div id="tokens"></div>
+    <div id="hero"></div>
+    <button class="close ui" type="button" aria-label="Close">✕</button>
+  </div>
+
+  <div class="toast" role="status"></div>
+
+  <script src="tokens.js"></script>
+  <script src="portals.js"></script>
+</body>
+</html>

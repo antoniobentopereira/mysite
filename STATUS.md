@@ -18,5 +18,14 @@ _Last updated: 2026-11-26_
 
 ## Open items
 - Plan and build the homepage letter portals.
+  - Prototype (P1: Pile / Zero-g / Toy box) lives in `prototypes/portals/`, not deployed.
+  - **Before production: replace stand-in Token stickers with final art.** Checklist:
+    - [ ] About: basketball, tennis ball, speargun + fish, beer, laptop `</>`, green portal swirl, hang glider, bento box (draw or generate, one consistent style)
+    - [ ] About: Djavan (1978) cover, original art (official source)
+    - [ ] About: Flamengo crest (official SVG)
+    - [ ] About: Hermeto Pascoal bobblehead (later a real 3D model)
+    - [ ] Norte: folded map, compass (yellow), rising arrow, coin stack, rocket, term sheet, lightbulb, handshake, bar chart
+    - [ ] Norte: star mascot + São Paulo flag (Norte's own files / official SVG)
+    - [ ] All files light (aim < 200 KB each), same outline style
 - Link VC Map from the homepage (letter portal), then it is discoverable.
 - About page (not started).
