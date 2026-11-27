@@ -42,8 +42,14 @@ Read first: `GLOSSARY.md`, `docs/adr/`, `.scratch/letter-portals/` (Norte spec +
 - The Reveal builds the Enter control from `enter.kind` in the Destination block; firing calls the controller's launch (phase `leaving`, then go to the Destination URL). About opens LinkedIn in a new tab, so its launch will need a "new tab" variant that stays `open`.
 - Back from the Destination: a fresh load of `#…` opens instantly; a page restored from the back/forward cache resumes from `leaving` to `open` and resets the control.
 
+## Built in Norte ticket 03 (reuse for About)
+
+- Idle charge: `public/portals/idle.js` charges any `.title .portal` letter, so the A gets it for free once it is a Portal letter. Its charge colour is `--charge` on the letter (Norte: blue); About needs its own rule in `style.css`.
+- Hint line: one shared hint for all portals; opening any portal (About too) dismisses it for good.
+
 ## Change log
 
 - 2026-11-26: created from the Norte grilling session.
 - 2026-11-26: Norte ticket 01 built; added the reusable pattern above.
 - 2026-11-26: Norte ticket 02 built (lever Enter control); notes above.
+- 2026-11-26: Norte ticket 03 built (idle charge, hint line); notes above.

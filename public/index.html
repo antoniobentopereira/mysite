@@ -21,6 +21,8 @@
 
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="portals/reveal.css">
+  <!-- Returning visitors who already opened a portal: hide the hint before the page shows (same key as portals/hint.js) -->
+  <script>try { if (localStorage.getItem('portal-hint-done')) document.documentElement.classList.add('hint-done'); } catch {}</script>
   <script type="module" src="portals/main.js"></script>
 </head>
 <body>
@@ -51,8 +53,11 @@
       <a href="vc-map/" data-dest="norte">Norte: a VC map</a>
     </nav>
 
-    <!-- Bottom-left -->
-    <p class="corner bottom-left">Computer science student in Rio, building small things to learn how to build bigger ones. Games, tools and experiments are coming. Pardon the dust.</p>
+    <!-- Bottom-left, with the hint line under it (gone once a portal was opened) -->
+    <div class="corner bottom-left">
+      <p>Computer science student in Rio, building small things to learn how to build bigger ones. Games, tools and experiments are coming. Pardon the dust.</p>
+      <p class="hint">Hint: some letters are doors, try the wiggly ones</p>
+    </div>
 
     <!-- Bottom-right -->
     <p class="corner bottom-right">

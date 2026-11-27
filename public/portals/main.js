@@ -3,6 +3,8 @@
 import { destinationFor } from './destinations.js';
 import * as reveal from './reveal.js';
 import { isNewTabClick } from './links.js';
+import * as hint from './hint.js';
+import * as idle from './idle.js';
 
 // Was the Reveal opened from this page (so Back can close it)?
 // False when the visitor arrived straight on a #norte link.
@@ -17,7 +19,7 @@ const portalLink = (name) => document.querySelector(`.sr-nav a[data-dest="${name
 
 function openFromHash({ instant }) {
   const name = hashDestination();
-  if (name) reveal.open(name, { instant, onRequestClose: requestClose });
+  if (name && reveal.open(name, { instant, onRequestClose: requestClose })) hint.portalOpened();
 }
 
 function closeReveal() {
@@ -26,6 +28,7 @@ function closeReveal() {
     // The hash may have changed again while we were closing
     if (hashDestination()) { openedHere = true; openFromHash({ instant: false }); return; }
     portalLink(name)?.focus({ preventScroll: true });
+    hint.popAway();
   });
 }
 
@@ -69,3 +72,4 @@ window.addEventListener('pageshow', (e) => {
 
 // A #norte link opens straight into the Reveal
 openFromHash({ instant: true });
+idle.start();

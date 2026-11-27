@@ -260,6 +260,107 @@ test('the Rest state keeps its pop-in and hover wiggle', async ({ page }) => {
   await expect(n).not.toHaveCSS('transform', 'none'); // wiggle
 });
 
+test.describe('idle charge', () => {
+  // Fake clock: 30 s pass instantly. Every letter that gets a charge is recorded.
+  async function watchCharges(page, { hidden = false } = {}) {
+    await page.clock.install();
+    await page.addInitScript((hidden) => {
+      if (hidden) Object.defineProperty(document, 'hidden', { get: () => true });
+      window.charged = [];
+      new MutationObserver((list) => list.forEach((m) => {
+        if (m.target.dataset.charge) window.charged.push(m.target.textContent);
+      })).observe(document, { subtree: true, attributeFilter: ['data-charge'] });
+    }, hidden);
+    await page.goto('./');
+  }
+  const charged = (page) => page.evaluate(() => window.charged);
+
+  test('only the N (a Portal letter) gets idle charges, now and then', async ({ page }) => {
+    await watchCharges(page);
+    await page.clock.runFor(30_000);
+    const letters = await charged(page);
+    expect(letters.length).toBeGreaterThan(0);
+    expect(new Set(letters)).toEqual(new Set(['N']));
+    await expect(page.locator('.title .line > span:not(.portal)[data-charge]')).toHaveCount(0);
+  });
+
+  test('no charges while a Reveal is open', async ({ page }) => {
+    await watchCharges(page);
+    await portalN(page).click();
+    await page.clock.runFor(1_000); // the intro
+    await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'open');
+    await page.evaluate(() => { window.charged = []; });
+    await page.clock.runFor(30_000);
+    expect(await charged(page)).toEqual([]);
+  });
+
+  test('no charges while the tab is hidden', async ({ page }) => {
+    await watchCharges(page, { hidden: true });
+    await page.clock.runFor(30_000);
+    expect(await charged(page)).toEqual([]);
+  });
+
+  test.describe('with reduced motion', () => {
+    test.use({ reducedMotion: 'reduce' });
+    test('no charges at all', async ({ page }) => {
+      await watchCharges(page);
+      await page.clock.runFor(30_000);
+      expect(await charged(page)).toEqual([]);
+    });
+  });
+});
+
+test.describe('the hint line', () => {
+  const hint = (page) => page.getByText('Hint: some letters are doors, try the wiggly ones');
+
+  test('is visible on a first visit, smaller than the corner text', async ({ page }) => {
+    await page.goto('./');
+    await expect(hint(page)).toBeVisible();
+    const size = (sel) => page.locator(sel).first().evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+    expect(await size('.hint')).toBeLessThan(await size('.bottom-left p'));
+  });
+
+  test('fits on a small phone screen', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 568 });
+    await page.goto('./');
+    const box = await hint(page).boundingBox();
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(320);
+    expect(box.y + box.height).toBeLessThanOrEqual(568);
+  });
+
+  test('pops away after the first portal opens, and stays hidden after reload', async ({ page }) => {
+    await page.goto('./');
+    await portalN(page).click();
+    await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'open');
+    await page.keyboard.press('Escape');
+    await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'rest');
+    await expect(hint(page)).toBeHidden();
+    await page.reload();
+    await expect(page.locator('.title')).toBeVisible();
+    await expect(hint(page)).toBeHidden();
+  });
+
+  test('is hidden on a later visit even if the Reveal was never closed', async ({ page }) => {
+    await page.goto('./#norte');
+    await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'open');
+    await page.goto('./');
+    await expect(hint(page)).toBeHidden();
+  });
+
+  test.describe('with reduced motion', () => {
+    test.use({ reducedMotion: 'reduce' });
+    test('disappears without an animation', async ({ page }) => {
+      await page.goto('./');
+      await portalN(page).click();
+      await page.keyboard.press('Escape');
+      await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'rest');
+      await expect(page.locator('.hint')).toHaveCSS('animation-name', 'none');
+      await expect(hint(page)).toBeHidden();
+    });
+  });
+});
+
 test('Ctrl-click on N opens VC Map in a new tab and leaves the homepage at rest', async ({ page, context }) => {
   await page.goto('./');
   const newTab = context.waitForEvent('page');

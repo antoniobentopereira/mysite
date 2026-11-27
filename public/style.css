@@ -145,6 +145,51 @@ body:has(.sr-nav a[data-dest="norte"]:focus-visible) .portal[data-dest="norte"] 
   border-radius: 0.1em;
 }
 
+/* Idle charge: now and then a Portal letter does one soft, cute move
+   (idle.js picks when and which). It runs on the letter's link, so it never
+   fights the letter's own pop-in and hover wiggle. */
+.title .portal { --charge: var(--blue); }
+.title .portal a { display: inline-block; transform-origin: 50% 100%; }
+.title .portal[data-charge="hop"] a    { animation: charge-hop 1.1s cubic-bezier(0.45, 0, 0.3, 1); }
+.title .portal[data-charge="glow"] a   { animation: charge-glow 1.6s ease-in-out; }
+.title .portal[data-charge="wobble"] a { animation: charge-wobble 1.3s ease-in-out; }
+@keyframes charge-hop { /* little squash, hop, soft landing */
+  0%   { transform: none; }
+  15%  { transform: scale(1.05, 0.95); }
+  40%  { transform: translateY(-0.06em) scale(0.98, 1.03); color: var(--charge); }
+  65%  { transform: scale(1.03, 0.97); }
+  82%  { transform: scale(0.99, 1.01); }
+  100% { transform: none; }
+}
+@keyframes charge-glow { /* slow warm breath of colour */
+  0%, 100% { transform: none; text-shadow: 0 0 0 transparent; }
+  45%  { transform: scale(1.03); color: var(--charge); text-shadow: 0 0 0.12em color-mix(in srgb, var(--yellow) 55%, transparent); }
+}
+@keyframes charge-wobble { /* gentle jelly sway */
+  0%, 100% { transform: none; }
+  20%  { transform: rotate(-3deg); color: var(--charge); }
+  45%  { transform: rotate(2.5deg); }
+  70%  { transform: rotate(-1.2deg); }
+  85%  { transform: rotate(0.5deg); }
+}
+
+/* The hint line under the bottom-left text: smaller and quieter */
+.bottom-left p { margin: 0; }
+.bottom-left .hint {
+  margin-top: 0.4rem;
+  font-size: 0.7rem;
+  color: var(--muted);
+  transform-origin: 0 50%;
+}
+/* After the first portal: a small pop, then gone for good */
+.bottom-left .hint.is-popping { animation: hint-pop 0.45s 0.3s cubic-bezier(0.5, 0, 0.75, 0) forwards; }
+.hint-done .bottom-left .hint { display: none; }
+@keyframes hint-pop {
+  0%   { transform: none; opacity: 1; }
+  30%  { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(0); opacity: 0; }
+}
+
 @keyframes pop-in {
   from { opacity: 0; transform: scale(0.3) translateY(0.2em); }
   to   { opacity: 1; transform: none; }
@@ -175,5 +220,9 @@ body:has(.sr-nav a[data-dest="norte"]:focus-visible) .portal[data-dest="norte"] 
   .line span:hover,
   .line span:nth-child(even):hover {
     transform: none;
+  }
+  .title .portal a,
+  .bottom-left .hint {
+    animation: none !important;
   }
 }
