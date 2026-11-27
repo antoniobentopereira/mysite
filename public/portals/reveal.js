@@ -254,9 +254,10 @@ function buildStage(name, dest, onRequestClose) {
 
   el.querySelector('.reveal-close').addEventListener('click', onRequestClose);
   // Tokens are grabbed on the stage (mouse and touch events). A press on the
-  // close button, the card or the lever is theirs: it never grabs a Token too.
+  // close button, the card or the lever is theirs: it never grabs a Token too,
+  // and the end of a tap stays theirs (the physics would cancel its click).
   el.querySelectorAll('.reveal-close, .reveal-card, .lever-wrap').forEach((part) => {
-    ['mousedown', 'touchstart'].forEach((n) => part.addEventListener(n, (e) => e.stopPropagation(), { passive: true }));
+    ['mousedown', 'touchstart', 'touchend'].forEach((n) => part.addEventListener(n, (e) => e.stopPropagation(), { passive: true }));
   });
   // A click or tap during the intro only skips to the end (it doesn't also
   // press the lever, say)

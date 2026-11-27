@@ -158,11 +158,13 @@ test.describe('when the 3D Reveal cannot run', () => {
     await expectSimpleReveal(page);
   });
 
-  test('the 3D library fails to download: the simple Reveal is used', async ({ page }) => {
-    await page.route('**/portals/vendor/three.min.js', (r) => r.abort());
-    await expectSimpleReveal(page);
-    errors = errors.filter((e) => !e.includes('three.min.js')); // the failed download itself is expected
-  });
+  for (const [lib, file] of [['3D', 'three.min.js'], ['physics', 'matter.min.js']]) {
+    test(`the ${lib} library fails to download: the simple Reveal is used`, async ({ page }) => {
+      await page.route(`**/portals/vendor/${file}`, (r) => r.abort());
+      await expectSimpleReveal(page);
+      errors = errors.filter((e) => !e.includes(file)); // the failed download itself is expected
+    });
+  }
 });
 
 test('grabbing and flinging around the Reveal never steals a click from the lever or ✕', async ({ page }) => {
@@ -181,6 +183,19 @@ test('grabbing and flinging around the Reveal never steals a click from the leve
   await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'open');
   await page.getByRole('button', { name: 'Close' }).click();
   await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'rest');
+});
+
+test.describe('on a touch screen', () => {
+  test.use({ hasTouch: true, viewport: { width: 390, height: 844 } });
+  test('tapping ✕ closes the Reveal (grabbing Tokens does not swallow the tap)', async ({ page }) => {
+    await page.goto('./');
+    await portalN(page).tap();
+    await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'intro');
+    await page.mouse.click(10, 300); // skip the intro
+    await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'open');
+    await page.getByRole('button', { name: 'Close' }).tap();
+    await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'rest');
+  });
 });
 
 test('rotating or resizing an open Reveal re-lays it out to the new screen', async ({ page }) => {

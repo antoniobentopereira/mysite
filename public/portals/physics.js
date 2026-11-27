@@ -58,6 +58,9 @@ export function createWorld(Matter, P, { mode = 'zerog', element } = {}) {
     });
     Composite.add(engine.world, grab);
   }
+  // Matter only hears a release on the stage: one outside the window lets go too
+  const releaseOutside = (e) => { if (!element.contains(e.target)) mouse.mouseup(e); };
+  if (element) addEventListener('mouseup', releaseOutside);
 
   return {
     /**
@@ -137,6 +140,7 @@ export function createWorld(Matter, P, { mode = 'zerog', element } = {}) {
           element.removeEventListener(n, mouse.mouseup);
         });
         element.style.cursor = '';
+        removeEventListener('mouseup', releaseOutside);
       }
       Composite.clear(engine.world, false);
       Engine.clear(engine);
