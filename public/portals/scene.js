@@ -37,6 +37,33 @@ function flipPose(u, dur) {
   return { ry: 0, s: 1.18 - 0.18 * ((p - 0.7) / 0.3), back: true };
 }
 
+// A small photo studio, built in code (no image file) and turned into a reflection
+// map once: a dark room with a big softbox up left in front, a tall strip light on
+// the right, a thin one above, and a warm glow from the floor in the burst colour.
+// Returns the render target holding it (its .texture goes on scene.environment).
+function buildStudio(THREE, renderer, color) {
+  const env = new THREE.Scene();
+  const things = [];
+  const add = (geometry, material) => { const m = new THREE.Mesh(geometry, material); things.push(m); env.add(m); return m; };
+  add(new THREE.SphereGeometry(30, 24, 12), new THREE.MeshBasicMaterial({ color: 0x16110b, side: THREE.BackSide }));
+  const panel = (w, h, [x, y, z], brightness, tint = 0xffffff) => {
+    const m = add(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(tint).multiplyScalar(brightness) }));
+    m.position.set(x, y, z);
+    m.lookAt(0, 0, 0); // facing the object
+  };
+  // Well off to the sides: flat faces mostly mirror the dark room (deep yellow),
+  // rounded edges catch the lights, and a glint crosses the faces as it turns
+  panel(10, 7, [-15, 12, 3], 7); // key softbox
+  panel(3, 18, [17, 0, 1], 4.5); // strip light, right
+  panel(18, 2.5, [0, 17, -2], 3); // thin light above
+  panel(30, 8, [0, -16, 6], 0.9, color); // warm floor bounce
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const target = pmrem.fromScene(env, 0.015);
+  pmrem.dispose();
+  things.forEach((m) => { m.geometry.dispose(); m.material.dispose(); });
+  return target;
+}
+
 /**
  * Build the scene and start the intro.
  *   libs: { THREE, Matter }
@@ -79,7 +106,17 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(FOV, W / H, 1, 10000);
-  camera.position.z = H / 2 / Math.tan((FOV / 2) * DEG);
+  // Distance for a 1:1 z = 0 plane. Near and far hug the scene (everything is close
+  // to z = 0), so the depth test is sharp: no flicker where two surfaces nearly touch.
+  function placeCamera() {
+    const z = H / 2 / Math.tan((FOV / 2) * DEG);
+    camera.position.z = z;
+    camera.near = z * 0.25;
+    camera.far = z * 4;
+    camera.aspect = W / H;
+    camera.updateProjectionMatrix();
+  }
+  placeCamera();
 
   let textures = [];
   const keep = (tex) => { tex.colorSpace = THREE.SRGBColorSpace; textures.push(tex); return tex; };
@@ -171,11 +208,14 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
   // The letter flips (like the other letters) and the 3D Hero turns in on its back
   // side. In the letter's spot it is sized so the Hero's N matches the letter;
   // while it flies to its spot it turns a little more, so its depth shows.
-  // Soft, realistic light: a key light from the top left, and a warm fill that
-  // picks up the burst's colour from below.
+  // Light: a key light from the top left, a warm fill that picks up the burst's
+  // colour from below, and a small photo studio (dark room, bright softboxes) that
+  // glossy surfaces reflect: the sharp highlights on the Hero's clear coat.
   const key = new THREE.DirectionalLight(0xffffff, 2.4);
   key.position.set(-0.8, 1, 1.4);
-  scene.add(key, new THREE.HemisphereLight(0xfff4dc, new THREE.Color(color), 1.4));
+  scene.add(key, new THREE.HemisphereLight(0xffffff, new THREE.Color(color), 1.1));
+  const studio = buildStudio(THREE, renderer, color);
+  scene.environment = studio.texture;
   let heroLetter = letterTexture(heroSpan);
   // In the letter's spot, the Hero's N covers the letter's ink: same height, same left edge
   const fit = letterBounds();
@@ -354,9 +394,7 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
   function relayout() {
     W = innerWidth; H = innerHeight;
     renderer.setSize(W, H);
-    camera.aspect = W / H;
-    camera.position.z = H / 2 / Math.tan((FOV / 2) * DEG);
-    camera.updateProjectionMatrix();
+    placeCamera();
     world.resize(W, H);
     // The (hidden) HTML title has re-laid out too: the letters' homes move with it
     origin = letterBox(heroSpan);
@@ -455,6 +493,7 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
       document.removeEventListener('visibilitychange', onVisibility);
       world.destroy();
       hero3d.dispose();
+      studio.dispose();
       textures.forEach((t) => t.dispose());
       scene.traverse((o) => { o.geometry?.dispose(); o.material?.dispose(); });
       renderer.dispose();

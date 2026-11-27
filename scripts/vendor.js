@@ -15,6 +15,8 @@ const THREE_PARTS = [
   'PlaneGeometry', 'CircleGeometry', 'MeshBasicMaterial', 'CanvasTexture', 'SRGBColorSpace', 'Color',
   // The 3D Hero (and later the 3D Tokens): solid shapes with soft, realistic light
   'Shape', 'ExtrudeGeometry', 'MeshStandardMaterial', 'HemisphereLight', 'DirectionalLight', 'Vector2', 'Vector3',
+  // Glossy car paint (clear coat) reflecting a small studio built in code; seams and rivets
+  'MeshPhysicalMaterial', 'PMREMGenerator', 'BoxGeometry', 'SphereGeometry', 'BackSide',
 ];
 
 await mkdir(OUT, { recursive: true });

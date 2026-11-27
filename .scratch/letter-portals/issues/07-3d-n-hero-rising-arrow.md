@@ -24,17 +24,28 @@ Notes:
 - Launch: the lever fires → a little pull back, then the Hero shoots off-screen along its arrow (650 ms) → VC Map. Back from VC Map puts it in its spot again. Closing mid-launch brings it home from where it is.
 - Three.js copy: 7 more parts (solid shapes, lit material, lights), about +35 KB on disk (~+10 KB compressed). The first Reveal stays under the 300 KB budget.
 - Fixed on the way: the "3D Reveal" test now also checks it is still 3D at the end (a scene that fails to build silently switches to the simple Reveal).
+- Realism pass (Antonio's request): glossy yellow car paint with a clear coat. Its sharp highlights reflect a small photo studio built in code (`buildStudio` in scene.js: dark room, softboxes well off to the sides, warm floor glow; no image file) set as the scene's environment, so later 3D Tokens get the same reflections. Plates: thin dark seams (over the front, the rounded edges and the side walls) at the stem's middle, the two corners and the tail's middle; 12 small, low, painted rivets beside the seams and at the stem's foot. Seams and rivets on the tail appear as it grows.
+- Hairline between the arrowhead and the shaft: fixed. Head and shaft are now one outline (one solid), not two overlapping ones, and the camera's depth range hugs the scene so nearly touching surfaces no longer flicker.
+- Three.js copy: 5 more parts (clear-coat material, studio reflection, boxes, spheres). The first Reveal is 209 KB compressed.
 
 ## Antonio's checks
 
 Tick each one when done. Run `node tests/serve.js` and open http://localhost:8417/ in Chrome.
 
-- [ ] Click the N: it turns into a yellow 3D N right where the letter was, about the same height.
-- [ ] It flies to the left (wide window) and its last stroke grows up-right into an arrow; the arrowhead pops on the tip.
-- [ ] The look: solid, with soft light from the top left and visible depth on its right side and underside (like the "N becomes a rising arrow" picture).
-- [ ] Narrow the window to phone width (or rotate a phone): the Hero sits on top, NORTE under it, the card at the bottom.
-- [ ] Fling stickers at the Hero: they bounce off its shape (not a big square around it).
-- [ ] Push the lever: the arrow pulls back a little, then shoots off-screen up-right, then VC Map opens.
-- [ ] Press Back in the browser: the Reveal is open again with the Hero in its spot.
-- [ ] Press Esc: the arrow shrinks back into the N, flies home and flips back into the letter, and ANTONIO BENTO is whole again.
-- [ ] Open `#norte` directly (http://localhost:8417/#norte): the Hero is already in place and stickers bounce off it normally.
+- [x] Click the N: it turns into a yellow 3D N right where the letter was, about the same height.
+- [x] It flies to the left (wide window) and its last stroke grows up-right into an arrow; the arrowhead pops on the tip.
+- [x] The look: solid, with soft light from the top left and visible depth on its right side and underside (like the "N becomes a rising arrow" picture).
+- [x] Narrow the window to phone width (or rotate a phone): the Hero sits on top, NORTE under it, the card at the bottom.
+- [x] Fling stickers at the Hero: they bounce off its shape (not a big square around it).
+- [x] Push the lever: the arrow pulls back a little, then shoots off-screen up-right, then VC Map opens.
+- [x] Press Back in the browser: the Reveal is open again with the Hero in its spot.
+- [x] Press Esc: the arrow shrinks back into the N, flies home and flips back into the letter, and ANTONIO BENTO is whole again.
+- [x] Open `#norte` directly (http://localhost:8417/#norte): the Hero is already in place and stickers bounce off it normally.
+
+Realism pass:
+
+- [ ] The Hero looks like glossy yellow car paint: bright yellow, with sharp light lines along its rounded edges and a sheen that moves across it while it flies in.
+- [ ] Thin seams show where its plates meet (middle of the stem, both corners of the N, middle of the tail) and wrap over its sides.
+- [ ] A few small, low, yellow rivets sit beside the seams and at the stem's foot; the tail's seam and rivets appear as the tail grows.
+- [ ] No hairline between the arrowhead and the shaft: they read as one piece.
+- [ ] Narrow window: still bright yellow (not dull or washed out).
