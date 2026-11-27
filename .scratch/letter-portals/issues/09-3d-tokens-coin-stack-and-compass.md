@@ -8,7 +8,7 @@ Spec: `.scratch/letter-portals/spec.md`.
 
 **Added by Antonio (2026-11-27):** the compass is interactive: its red needle points at the lever's red ball with spring-damped physics, so it swings and wobbles past the target before settling, and trails a moving target instead of locking onto it.
 
-**Status:** ready-for-human
+**Status:** done
 
 - [x] Coin stack and compass are real 3D objects built in code (no model files).
 - [x] They flip in from their letters during the chain like flat Tokens.
@@ -19,10 +19,10 @@ Spec: `.scratch/letter-portals/spec.md`.
 
 ## Antonio's checks (Chrome, `npm run serve`, then open http://localhost:8417/)
 
-- [ ] Click the N: the coin stack and the compass flip in from their letters like the stickers.
-- [ ] Look: both feel like real, softly lit objects (gold coins with a star on top; yellow compass, cream face, red needle).
-- [ ] Floating, they tumble slowly in depth so their sides show.
-- [ ] Grab one: it turns round to face you; let go and it tumbles on. Flinging and bouncing feel the same as the stickers.
-- [ ] Compass: the red needle swings toward the lever's red ball, overshoots and wobbles before settling.
-- [ ] Compass: push the lever or fling the compass around: the needle lags and swings after the ball instead of snapping onto it.
-- [ ] Close (✕ / Esc): both flip back into their letters.
+- [x] Click the N: the coin stack and the compass flip in from their letters like the stickers.
+- [x] Look: both feel like real, softly lit objects (gold coins with a star on top; yellow compass, cream face, red needle).
+- [x] Floating, they tumble slowly in depth so their sides show.
+- [x] Grab one: it turns round to face you; let go and it tumbles on. Flinging and bouncing feel the same as the stickers.
+- [x] Compass: the red needle swings toward the lever's red ball, overshoots and wobbles before settling.
+- [x] Compass: push the lever or fling the compass around: the needle lags and swings after the ball instead of snapping onto it.
+- [x] Close (✕ / Esc): both flip back into their letters.
