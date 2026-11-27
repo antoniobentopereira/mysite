@@ -18,7 +18,8 @@ Spec: `.scratch/letter-portals/spec.md`.
 
 Notes:
 - Grab: Matter's mouse constraint on the Reveal's stage (`physics.js`); only Tokens can be grabbed. ✕, the card and the lever keep their own presses and taps (`reveal.js`).
-- Hitboxes: added when the Hero lands, for the Hero slot, NORTE, the lever, its label and the card, each shrunk by `solidInset` (16 px; the Hero slot a bit more, since the arrow only fills its middle). Zero-g only, as in the prototype.
+- Hitboxes (added when the Hero lands, Zero-g only, as in the prototype) follow the visible shapes: the arrow's real outline (`outline()` in `heroes/norte-flat.js`), one box per NORTE letter, the lever's box, stick, round ball and label, and the card's rounded box shrunk by `solidInset` (16 px, the only one Tokens tuck behind). A Token caught inside a hitbox jumps to the nearest free spot.
+- Of the lever, only the red ball takes presses; around it, Tokens can be grabbed. No text in the Reveal is selectable.
 - Resize: the scene, walls, hitboxes and letter homes follow the new screen; a Token whose middle goes off-screen is put back inside. Tokens keep their size.
 - Hidden tab: drawing and physics stop. The intro keeps real time, so it stays in step with the card appearing.
 - No WebGL 2 or a failed library download → the simple Reveal. First Reveal measured at about 185 KB compressed.
@@ -29,7 +30,10 @@ Tick each one when done. Run `node tests/serve.js` and open http://localhost:841
 
 - [x] Grab a sticker with the mouse and fling it: it follows your hand a little softly, then flies off and bounces. Feels good?
 - [x] The hand cursor shows over a sticker, and a closed hand while holding one.
-- [x] Flung stickers bounce off the arrow, NORTE, the lever and the card. They tuck slightly behind the edges but never sit over the card text or the lever. Too tight or too loose?
+- [x] Flung stickers bounce off the arrow's real shape (also its bottom stem and the head), each NORTE letter, the lever's red ball, stick and box, and the card. They tuck slightly behind the card's edges only. No invisible walls around the arrow.
+- [ ] Right after the explosion, when the hitboxes switch on, no sticker stays stuck behind the card or the lever.
+- [ ] Grab a sticker floating right next to the lever: it grabs. Only the red ball moves the lever, even with a sticker beside it.
+- [ ] Drag around the Reveal and double-click the card: no text gets selected.
 - [x] ✕, the lever and the card still work right after flinging stickers around.
 - [x] With the Reveal open, resize the window from wide to narrow and back: the arrow, NORTE and card move to their new places and no sticker is lost. Close: ANTONIO BENTO is whole, in the right place.
 - [x] DevTools > toggle device toolbar (phone): drag a sticker with the "finger", and tap ✕ to close.
