@@ -14,7 +14,7 @@ Spec: `.scratch/letter-portals/spec.md`.
 
 **Blocked by:** 01
 
-**Status:** ready-for-human (built; waiting for Antonio's checks below)
+**Status:** done
 
 - [x] Libraries are vendored copies (no CDN), loaded lazily; the Rest state downloads nothing new.
 - [x] Letter cards line up exactly with the HTML title at the moment of the click.
@@ -39,11 +39,11 @@ Notes:
 
 Tick each one when done. Run `node tests/serve.js` and open http://localhost:8417/ in Chrome (wide window first, then a narrow one).
 
-- [ ] Click the N: the brown burst spreads from the N and the N turns into the flat arrow right where it stood.
-- [ ] The other letters flip into stickers one at a time, nearest to the N first, staying about letter size.
-- [ ] Short pause, then the stickers shrink and blast out in every direction (not all to one side), then float and drift gently, never leaving the screen.
-- [ ] The arrow flies to its spot, NORTE spells out, then the card and lever appear. The whole thing feels like the prototype.
-- [ ] Click anywhere during the intro: it jumps straight to the end.
-- [ ] ✕, Esc and Back each send the stickers home, flipping back into letters while the brown shrinks, and ANTONIO BENTO is whole again.
-- [ ] At the moment of the click, the letters don't jump (the cards sit exactly on the real letters).
-- [ ] DevTools > Rendering > "prefers-reduced-motion: reduce": clicking N gives the simple brown Reveal, no flying stickers.
+- [x] Click the N: the brown burst spreads from the N and the N turns into the flat arrow right where it stood.
+- [x] The other letters flip into stickers one at a time, nearest to the N first, staying about letter size.
+- [x] Short pause, then the stickers shrink and blast out in every direction (not all to one side), then float and drift gently, never leaving the screen.
+- [x] The arrow flies to its spot, NORTE spells out, then the card and lever appear. The whole thing feels like the prototype.
+- [x] Click anywhere during the intro: it jumps straight to the end.
+- [x] ✕, Esc and Back each send the stickers home, flipping back into letters while the brown shrinks, and ANTONIO BENTO is whole again.
+- [x] At the moment of the click, the letters don't jump (the cards sit exactly on the real letters).
+- [x] DevTools > Rendering > "prefers-reduced-motion: reduce": clicking N gives the simple brown Reveal, no flying stickers.

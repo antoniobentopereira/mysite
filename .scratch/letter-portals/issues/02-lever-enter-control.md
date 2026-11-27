@@ -6,7 +6,7 @@ Spec: `.scratch/letter-portals/spec.md`. Feel reference: the prototype's lever.
 
 **Blocked by:** 01
 
-**Status:** ready-for-human (built; waiting for Antonio's checks below)
+**Status:** done
 
 - [x] Dragging the lever to the right (up or down) past its threshold fires it; releasing early springs it back.
 - [x] A tap / click fires it; Enter and Space fire it when focused; it has an accessible name ("Enter Norte: a VC map").
@@ -31,6 +31,6 @@ Tick each one when done. Run `node tests/serve.js` and open http://localhost:841
 
 Round 2 (bigger lever outside the card):
 
-- [ ] The lever feels like a main object: big, sitting on top of the card like on a table, with its shadow falling to the right (wide and narrow window).
-- [ ] Dragging the ball right and down launches it; right and up still does too.
-- [ ] Without the "or just open it →" link, the card still reads well.
+- [x] The lever feels like a main object: big, sitting on top of the card like on a table, with its shadow falling to the right (wide and narrow window).
+- [x] Dragging the ball right and down launches it; right and up still does too.
+- [x] Without the "or just open it →" link, the card still reads well.
