@@ -7,7 +7,7 @@ _Last updated: 2026-11-27_
 ## Homepage
 - **v1:** typographic page (ANTONIO / BENTO, four corner texts).
 - **Letter portals (in progress):**
-  - First "N" in ANTONIO -> `vc-map/` ("Norte: a VC map"). **3D Reveal built** (ticket 04): burst, letters flip into stand-in stickers, explosion, Zero-g float, NORTE, card + lever; closing reassembles the title. Simple Reveal for reduced motion. Local-only tuning panel built (ticket 06: sliders, Replay, Save into the defaults, Reset, T to hide; never on the official site). **3D Hero built** (ticket 07): a solid 3D N built in code, its tail grows into the rising arrow, and it launches off-screen when the lever fires. **Final flat stickers** (ticket 08): 7 SVGs in one sticker style, drawn crisp at any size. Next: 3D Tokens (09 to 11).
+  - First "N" in ANTONIO -> `vc-map/` ("Norte: a VC map"). **3D Reveal built** (ticket 04): burst, letters flip into stand-in stickers, explosion, Zero-g float, NORTE, card + lever; closing reassembles the title. Simple Reveal for reduced motion. Local-only tuning panel built (ticket 06: sliders, Replay, Save into the defaults, Reset, T to hide; never on the official site). **3D Hero built** (ticket 07): a solid 3D N built in code, its tail grows into the rising arrow, and it launches off-screen when the lever fires. **Final flat stickers** (ticket 08): 7 SVGs in one sticker style, drawn crisp at any size. **3D Tokens** (ticket 09): coin stack and compass built in code; they tumble while floating and face you when grabbed; the compass needle swings toward the lever's ball (spring-damped). Next: star mascot and rocket (10, 11).
   - "A" in ANTONIO -> About (later)
 - Automated checks: Playwright (dev only), `npm test`.
 - Libraries: Three.js (trimmed) and Matter.js copies in `public/portals/vendor/`, made by `npm run vendor`.
@@ -28,6 +28,7 @@ _Last updated: 2026-11-27_
     - [ ] About: Flamengo crest (official SVG)
     - [ ] About: Hermeto Pascoal bobblehead (later a real 3D model)
     - [x] Norte flat stickers (ticket 08): folded map, rising arrow, São Paulo flag, term sheet ("TERM SHEET"), lightbulb, unicorn, founders graph
-    - [ ] Norte 3D Tokens (tickets 09 to 11): compass (yellow), coin stack, rocket, star mascot (Norte's own files)
+    - [x] Norte 3D Tokens (ticket 09): compass (yellow, needle points at the lever), coin stack
+    - [ ] Norte 3D Tokens (tickets 10, 11): rocket, star mascot (Norte's own files)
     - [ ] All files light (aim < 200 KB each), same outline style
 - About page (not started).

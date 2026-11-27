@@ -75,3 +75,8 @@ Read first: `GLOSSARY.md`, `docs/adr/`, `.scratch/letter-portals/` (Norte spec +
 
 - Flat Token stickers: one SVG per Token in `public/portals/tokens/<destination>/`, `viewBox="0 0 100 100"`, under 30 KB. Shared look: a white die-cut edge (`class="sticker-edge"`, the art's silhouette stroked 9 wide), a soft shadow (same silhouette, offset 1.5/2.5, 22 % ink), then the art with a 3 px `#1d1a10` outline. About's drawn Tokens can use the same recipe with About's colours; `tests/norte-tokens.spec.js` shows how to check them.
 - The scene draws each sticker as big as it is ever shown (Token or letter size, times screen density), so any SVG stays crisp.
+
+## Built in Norte ticket 09 (reuse for About)
+
+- 3D Tokens: a `kind: 'model'` Token whose `src` is a `.js` module exporting `createToken(THREE)` → `{ object, update?(dt, aim), dispose() }`, built in a box 1 unit wide facing the visitor (contract written at the top of `public/portals/tokens/norte/compass.js`). The scene does the rest for any Destination: flip in from the letter, slow tumble while floating, ease to face the visitor when grabbed, flip back on close, same physics as stickers. A `model` Token whose code isn't written yet can point at a stand-in `.svg`. The Hermeto bobblehead can follow it (a model file would need a loader added to `scripts/vendor.js`).
+- `update(dt, aim)` gets `aim.target`, the screen angle from the Token to the lever's ball (Norte's compass needle points at it with `public/portals/needle.js`, a spring-damped pointer). About's Enter control is a ribbon, so anything About wants to aim at it would need the scene to look for the ribbon instead of `.lever-ball`.

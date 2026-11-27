@@ -16,14 +16,15 @@ export const DESTINATIONS = {
     shade: '#a87400',
     // Tokens, in title-letter order (T O N I O B E N T O, then one spare).
     // kind: 'sticker' (flat SVG card) or 'model' (3D, built in code).
-    // src: the sticker art, one SVG file per Token (swap a file to change its art).
-    // The 'model' Tokens still show their stand-in sticker until tickets 09 to 11.
+    // src: one file per Token (swap a file to change it): the sticker's SVG, or the
+    // 3D Token's code (a module exporting createToken, see tokens/norte/compass.js).
+    // A 'model' Token whose code isn't written yet points at a stand-in sticker.
     tokens: [
       { name: 'folded map', kind: 'sticker', src: art('tokens/norte/folded-map.svg') },
-      { name: 'compass', kind: 'model', src: art('tokens/norte/compass.svg') },
+      { name: 'compass', kind: 'model', src: art('tokens/norte/compass.js') },
       { name: 'star mascot', kind: 'model', src: art('tokens/norte/star-mascot.svg') },
       { name: 'rising arrow', kind: 'sticker', src: art('tokens/norte/rising-arrow.svg') },
-      { name: 'coin stack', kind: 'model', src: art('tokens/norte/coin-stack.svg') },
+      { name: 'coin stack', kind: 'model', src: art('tokens/norte/coin-stack.js') },
       { name: 'rocket', kind: 'model', src: art('tokens/norte/rocket.svg') },
       { name: 'São Paulo flag', kind: 'sticker', src: art('tokens/norte/sao-paulo-flag.svg') },
       { name: 'term sheet', kind: 'sticker', src: art('tokens/norte/term-sheet.svg') },

@@ -87,8 +87,13 @@ export function open(name, { instant = false, onRequestClose = () => {} } = {}) 
     // The scene draws the letters in the homepage font, so it waits for it too
     loadLibs().then(async (libs) => {
       await document.fonts.ready;
-      const hero = await import(dest.hero.src); // the Hero's own code
-      return { ...libs, hero };
+      // The Hero's own code, and each 3D Token's (a 'model' Token whose code isn't
+      // written yet still points at a stand-in sticker, and is drawn as one)
+      const [hero, ...models] = await Promise.all([
+        import(dest.hero.src),
+        ...dest.tokens.map((t) => (t.kind === 'model' && t.src.endsWith('.js') ? import(t.src) : null)),
+      ]);
+      return { ...libs, hero, models };
     })
       .then(ifStill((libs) => startScene(libs, dest)), ifStill(useFallback));
   }
@@ -119,7 +124,7 @@ function createSceneFor(libs, dest, letters) {
     color: dest.color,
     letters,
     heroIndex: dest.letterIndex,
-    tokens: dest.tokens,
+    tokens: dest.tokens.map((t, i) => ({ ...t, model: libs.models[i] })),
     hero: libs.hero,
     heroColor: dest.accent,
     stage,

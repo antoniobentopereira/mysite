@@ -13,6 +13,8 @@ const HERO_GROW_MS = 650; // the Hero's tail growing into the rising arrow
 const HERO_TURN_START = 0.5; // in the letter's spot the Hero is turned half its own tilt
 const LAUNCH_MS = 650; // the launch: the Hero shoots off-screen along its arrow
 const DEG = Math.PI / 180;
+const TUMBLE = [0.3, 0.6]; // a floating 3D Token's slow turn in depth (radians/s, slowest..fastest)
+const FACE_MS = 180; // a grabbed 3D Token eases round to face the visitor (time constant)
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 const lerp = (a, b, t) => a + (b - a) * t;
 const easeOut = (t) => 1 - (1 - t) ** 3;
@@ -68,7 +70,8 @@ function buildStudio(THREE, renderer, color) {
  * Build the scene and start the intro.
  *   libs: { THREE, Matter }
  *   letters: the title's letter spans, in order; heroIndex: the Portal letter
- *   tokens: [{ name, src }] for the other letters, in title order
+ *   tokens: [{ name, src, model }] for the other letters, in title order; model:
+ *     a 3D Token's module ({ createToken }, see tokens/norte/compass.js), else null
  *   hero: the Hero's module ({ createHero, letterBounds, BOX, TILT, ARROW_DIR },
  *     see heroes/norte-3d.js); its objects are built in a square box BOX.size wide
  *   heroColor: its colour
@@ -136,6 +139,16 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
     mesh.scale.set(Math.max(w, 0.01), Math.max(h, 0.01), 1);
     mesh.rotation.set(0, ry, -rz);
   }
+  // An invisible mesh that wipes the depth buffer just before it is drawn (at
+  // renderOrder `order`): what comes after it can't cut into what came before.
+  // Each 3D Token and the Hero get one, so solid objects never poke through each other.
+  const depthClear = (order, transparent) => {
+    const m = new THREE.Mesh(quad, new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: false, depthTest: false, transparent }));
+    m.renderOrder = order;
+    m.frustumCulled = false;
+    m.onBeforeRender = (r) => r.clearDepth();
+    return m;
+  };
 
   // ---------- Textures ----------
   // A letter drawn in the homepage font and colour, the same size as the HTML letter.
@@ -182,15 +195,40 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
 
   // ---------- Tokens: one per other letter ----------
   const others = letters.filter((_, i) => i !== heroIndex);
+  // Each Token is drawn in its own slot after the burst and before the Hero, so
+  // stickers and 3D Tokens stack the same way
+  const tokenOrder = (i) => 1 + (i + 1) * 0.01;
+  // A 3D Token: its object in a box 1 unit wide, inside a group that tumbles it in
+  // depth, inside one that places, sizes, spins and flips it like a card
+  function token3d(model, i) {
+    const outer = new THREE.Group(), tumble = new THREE.Group();
+    outer.rotation.order = 'ZYX';
+    // Drawn in the Token's own slot, like the stickers (three.js draws solid things
+    // before see-through ones, so its materials count as see-through, fully opaque)
+    const order = tokenOrder(i);
+    model.object.traverse((o) => {
+      if (!o.isMesh) return;
+      o.renderOrder = order;
+      [o.material].flat().forEach((m) => { m.transparent = true; m.depthWrite = true; m.depthTest = true; });
+    });
+    tumble.add(model.object);
+    outer.add(tumble, depthClear(order - 0.004, true));
+    outer.visible = false;
+    scene.add(outer);
+    const speed = () => (Math.random() < 0.5 ? -1 : 1) * lerp(TUMBLE[0], TUMBLE[1], Math.random());
+    return { model, outer, tumble, turn: { x: 0, y: 0 }, speed: { x: speed(), y: speed() } };
+  }
   const tokens = others.map((span, i) => {
     const letter = letterTexture(span);
+    const model = tokenList[i].model?.createToken(THREE) ?? null;
     const k0 = (span.offsetHeight * 0.8) / S; // in place, a Token is about letter size
     // Drawn as big as it is ever shown (Token size or letter size, in screen pixels), so it
     // stays crisp; a little extra room for the flip's pop, within sensible texture limits
     const shownPx = S * Math.max(1, k0) * renderer.getPixelRatio();
     const stickerPx = Math.min(1024, Math.max(128, Math.ceil(shownPx * 1.25)));
     return {
-      span, mesh: card(1), letter, sticker: imageTexture(tokenList[i].src, stickerPx), k0,
+      span, mesh: card(tokenOrder(i)), letter, sticker: model ? null : imageTexture(tokenList[i].src, stickerPx), k0,
+      solid: model && token3d(model, i),
       home: { x: letter.x, y: letter.y }, rank: 0, body: null, k: k0,
       pose: { x: letter.x, y: letter.y, rz: 0, ry: 0, s: 1, back: false },
     };
@@ -203,9 +241,46 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
 
   function drawToken(t) {
     const p = t.pose;
+    if (t.solid) { // a 3D Token: its letter card until the flip turns it round
+      const { outer, tumble, turn } = t.solid;
+      outer.visible = p.back;
+      t.mesh.visible = !p.back;
+      if (p.back) {
+        outer.position.set(p.x - W / 2, H / 2 - p.y, 0);
+        outer.scale.setScalar(Math.max(S * t.k * p.s, 0.01));
+        outer.rotation.set(0, p.ry, -p.rz);
+        tumble.rotation.set(turn.x, turn.y, 0);
+        return;
+      }
+    }
     t.mesh.material.map = p.back ? t.sticker : t.letter.tex;
     if (p.back) place(t.mesh, p.x, p.y, S * t.k * p.s, S * t.k * p.s, p.rz, p.ry);
     else place(t.mesh, p.x, p.y, t.letter.w * p.s, t.letter.h * p.s, p.rz, p.ry);
+  }
+
+  // Floating 3D Tokens tumble slowly in depth; a grabbed one eases round to face
+  // the visitor (and tumbles on from there once let go). Before the explosion they
+  // face the front, like the letters they came from.
+  function tumbleFrame(dt) {
+    const held = world.held(), face = Math.exp(-dt / FACE_MS);
+    for (const tk of tokens) {
+      if (!tk.solid || !tk.body) continue;
+      const { turn, speed } = tk.solid;
+      if (tk.body === held) { turn.x = normAngle(turn.x) * face; turn.y = normAngle(turn.y) * face; }
+      else { turn.x += speed.x * (dt / 1000); turn.y += speed.y * (dt / 1000); }
+    }
+  }
+  // Each shown 3D Token hears where the lever's ball is (the compass points at it)
+  let ball = null;
+  function aimFrame(dt) {
+    ball ??= stage.querySelector('.lever-ball');
+    const r = ball?.getBoundingClientRect();
+    const at = r?.width ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : null;
+    for (const tk of tokens) {
+      if (!tk.solid?.model.update || !tk.pose.back) continue;
+      const p = tk.pose;
+      tk.solid.model.update(dt, { target: at && Math.atan2(at.y - p.y, at.x - p.x), turn: p.rz });
+    }
   }
 
   // ---------- Hero: the clicked letter becomes a solid 3D object ----------
@@ -237,7 +312,7 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
   heroObj.rotation.set(0, HERO_TILT.y, 0, 'YXZ'); // posed every frame (poseHero)
   heroTilt.add(heroObj);
   heroTilt.rotation.order = 'ZYX'; // like the cards: spin in the screen plane, flip on its upright axis
-  scene.add(heroTilt);
+  scene.add(heroTilt, depthClear(1.99, true)); // the Hero (order 2) is drawn after every Token, never cut by them
   const heroLetterMesh = card(2);
   heroLetterMesh.material.map = heroLetter.tex;
 
@@ -383,6 +458,7 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
       const from = closeFrom.tokens[i];
       const m = easeInOut(clamp01((t - i * 30) / 700));
       tk.k = lerp(from.k, tk.k0, m);
+      if (tk.solid) { tk.solid.turn.x = lerp(from.turn.x, 0, m); tk.solid.turn.y = lerp(from.turn.y, 0, m); } // back to facing front
       const pose = { x: lerp(from.x, tk.home.x, m), y: lerp(from.y, tk.home.y, m), rz: lerp(from.rz, 0, m), s: 1 };
       if (from.back) { // flip back into the letter on the way
         const u = t - (320 + i * 30);
@@ -453,7 +529,9 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
     } else {
       introFrame(now - t0, dt);
       world.update(dt);
+      tumbleFrame(dt);
     }
+    aimFrame(dt);
     tokens.forEach(drawToken);
     showHero(now);
     renderer.render(scene, camera);
@@ -491,7 +569,7 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
       const p = hero.pose, l = launchOffset(performance.now());
       launchAt = 0;
       closeFrom = {
-        tokens: tokens.map((tk) => ({ ...tk.pose, rz: normAngle(tk.pose.rz), k: tk.k })),
+        tokens: tokens.map((tk) => ({ ...tk.pose, rz: normAngle(tk.pose.rz), k: tk.k, turn: tk.solid ? { x: normAngle(tk.solid.turn.x), y: normAngle(tk.solid.turn.y) } : null })),
         hero: { ...p, x: p.x + l.dx, y: p.y + l.dy, size: p.size * l.s, grow: hero.grow, spin: normAngle(spinNow(performance.now())) },
       };
       world.destroy();
@@ -509,6 +587,7 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
       document.removeEventListener('visibilitychange', onVisibility);
       world.destroy();
       hero3d.dispose();
+      tokens.forEach((tk) => tk.solid?.model.dispose());
       studio.dispose();
       textures.forEach((t) => t.dispose());
       scene.traverse((o) => { o.geometry?.dispose(); o.material?.dispose(); });

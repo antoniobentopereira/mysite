@@ -17,6 +17,8 @@ const THREE_PARTS = [
   'Shape', 'ExtrudeGeometry', 'MeshStandardMaterial', 'HemisphereLight', 'DirectionalLight', 'Vector2', 'Vector3',
   // Glossy car paint (clear coat) reflecting a small studio built in code; seams and rivets
   'MeshPhysicalMaterial', 'PMREMGenerator', 'BoxGeometry', 'SphereGeometry', 'BackSide',
+  // 3D Tokens: coins and the compass case (cylinders), rims and rings (tori)
+  'CylinderGeometry', 'TorusGeometry',
 ];
 
 await mkdir(OUT, { recursive: true });

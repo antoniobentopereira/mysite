@@ -103,6 +103,11 @@ export function createWorld(Matter, P, { mode = 'zerog', element } = {}) {
       return b;
     },
 
+    /** The Token body being held right now (grabbed by mouse or finger), or null. */
+    held() {
+      return grab?.body ?? null;
+    },
+
     /** The screen changed size: move the walls, bring every Token back on screen. */
     resize(width, height) {
       W = width; H = height;

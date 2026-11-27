@@ -18,3 +18,17 @@ for (const name of FLAT) {
     expect(svg).toMatch(/class="sticker-edge"/); // the white die-cut border every sticker has
   });
 }
+
+test('opening the Reveal loads the 3D Tokens\' own code (compass, coin stack)', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('console', (m) => { if (m.type() === 'error' && !m.location().url.endsWith('/favicon.ico')) errors.push(m.text()); });
+  const loaded = [];
+  page.on('response', (r) => { if (/tokens\/norte\/[\w-]+\.js$/.test(r.url()) && r.ok()) loaded.push(r.url().split('/').pop()); });
+  await page.goto('./');
+  await page.locator('.title a[href="vc-map/"]').click();
+  await expect(page.locator('html')).toHaveAttribute('data-reveal-phase', 'open');
+  await expect(page.locator('canvas')).toHaveCount(1); // the 3D Reveal, not the simple one
+  expect(loaded.sort()).toEqual(['coin-stack.js', 'compass.js']);
+  expect(errors).toEqual([]);
+});
