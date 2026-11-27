@@ -1,5 +1,6 @@
 // The Norte portal, checked as a visitor sees the homepage.
 import { test, expect } from '@playwright/test';
+import { readFile, writeFile } from 'node:fs/promises';
 
 const revealState = (page) => page.locator('html'); // where the Reveal publishes its state
 const norteLink = (page) => page.getByRole('link', { name: 'Norte: a VC map' });
@@ -566,6 +567,33 @@ test.describe('the tuning panel (Antonio only)', () => {
     await page.waitForLoadState();
     await panel(page).getByText('Tuning', { exact: true }).click();
     await expect(flip).toHaveValue('300');
+  });
+
+  test('Save writes the values into the site\'s defaults, and Reset goes back to them', async ({ page }) => {
+    const defaults = new URL('../public/portals/choreography.js', import.meta.url);
+    const original = await readFile(defaults, 'utf8');
+    try {
+      await page.goto('./');
+      await panel(page).getByText('Tuning', { exact: true }).click();
+      const flip = panel(page).getByRole('slider', { name: 'Flip duration (ms)' });
+      await flip.fill('620');
+      await panel(page).getByRole('button', { name: 'Save' }).click();
+      await expect(panel(page).getByRole('button', { name: 'Saved ✓' })).toBeVisible();
+      await expect.poll(() => readFile(defaults, 'utf8')).toContain('morphDur: 620,');
+      // An unsaved change, then Reset: back to the saved 620
+      await flip.fill('900');
+      await panel(page).getByRole('button', { name: 'Reset' }).click();
+      await page.waitForLoadState();
+      await panel(page).getByText('Tuning', { exact: true }).click();
+      await expect(flip).toHaveValue('620');
+    } finally {
+      await writeFile(defaults, original);
+    }
+  });
+
+  test('Save only accepts the page\'s own requests', async ({ request, baseURL }) => {
+    const res = await request.post(`${baseURL}__save-tuning`, { data: { morphDur: 1 }, headers: { origin: 'https://evil.example' } });
+    expect(res.status()).toBe(403);
   });
 
   test('Replay plays the Norte Reveal from the start', async ({ page }) => {

@@ -3,8 +3,9 @@
 //
 // Changing a slider edits the shared TIMINGS (choreography.js) and saves it in
 // this browser. Most values show on Replay; drag, gravity, hitbox tightness and
-// the idle charge change live. "Copy values" puts them on the clipboard as JSON,
-// to bake them in as the new defaults in choreography.js.
+// the idle charge change live. Save writes them into TIMINGS in choreography.js
+// (through the local server, tests/serve.js), so they become the site's
+// defaults once committed and deployed. Reset drops unsaved changes.
 import { TIMINGS } from './choreography.js';
 import * as reveal from './reveal.js';
 
@@ -49,7 +50,7 @@ export function start() {
   panel.className = 'tune';
   panel.setAttribute('aria-label', 'Tuning');
   panel.innerHTML = `<summary>Tuning</summary><div class="tune-body"></div>
-    <div class="tune-actions"><button type="button" data-act="replay">Replay</button><button type="button" data-act="copy">Copy values</button><button type="button" data-act="reset">Reset</button></div>`;
+    <div class="tune-actions"><button type="button" data-act="replay">Replay</button><button type="button" data-act="save">Save</button><button type="button" data-act="reset">Reset</button></div>`;
   const body = panel.querySelector('.tune-body');
   for (const [k, label, min, max, step, desc] of SLIDERS) {
     const row = document.createElement('label');
@@ -73,7 +74,7 @@ export function start() {
     if (!button) return;
     const act = button.dataset.act;
     if (act === 'replay') replay();
-    if (act === 'copy') copy(button);
+    if (act === 'save') save(button);
     if (act === 'reset') { write(SAVED, null); location.reload(); }
   });
   document.body.append(panel);
@@ -95,15 +96,24 @@ function replay() {
   if (reveal.getPhase() === 'rest') document.querySelector('.sr-nav a[data-dest]')?.click();
 }
 
-// The clipboard only works on localhost / file URLs (not on a LAN address over
-// http): there, show the values to copy by hand instead.
-function copy(button) {
-  const json = JSON.stringify(TIMINGS, null, 2);
-  const done = () => {
-    button.textContent = 'Copied ✓';
-    setTimeout(() => { button.textContent = 'Copy values'; }, 1500);
+// Write the values into choreography.js. They are then the defaults, so this
+// browser's own copy is no longer needed (Reset now comes back to them).
+async function save(button) {
+  const say = (text) => {
+    button.textContent = text;
+    setTimeout(() => { button.textContent = 'Save'; }, 1500);
   };
-  const byHand = () => prompt('Copy these values:', json);
-  if (navigator.clipboard) navigator.clipboard.writeText(json).then(done, byHand);
-  else byHand();
+  try {
+    const res = await fetch(new URL('__save-tuning', document.baseURI), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(TIMINGS),
+    });
+    if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
+    write(SAVED, null);
+    say('Saved ✓');
+  } catch (e) {
+    say('Not saved');
+    alert(`Not saved: ${e.message}\nSave only works when the site runs with: node tests/serve.js`);
+  }
 }

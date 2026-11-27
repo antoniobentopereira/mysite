@@ -19,20 +19,23 @@ Notes:
 - Panel: `public/portals/tuning.js` + `tuning.css`, bottom left, folded until you click "Tuning". Values are saved in this browser only (`portal-tune`), T's choice too (`portal-tune-hidden`).
 - Live: air drag, hitbox tightness (the card's), idle charge (from the next one), gravity (Toy box only, hidden). Everything else shows on Replay.
 - Replay: with a Reveal open, it plays again from the start; at rest, it opens Norte.
-- To bake new defaults in: Copy values, paste them to Claude, and they go into `TIMINGS` in `public/portals/choreography.js`.
-- Copy uses the clipboard on localhost; on a LAN address (phone) the browser blocks it, so a box shows the values to copy by hand.
+- Save (replaced Copy values, Antonio's request): the local server (`tests/serve.js`, `POST /__save-tuning`) writes the values into `TIMINGS` in `public/portals/choreography.js`. Commit and deploy to make them live. Only works with `node tests/serve.js`; it refuses requests from other websites.
+- Reset: drops unsaved slider changes and reloads, so the sliders show the last saved values.
 - File URLs: allowed by the check, but Chrome blocks the site's scripts on file:// anyway, so use `node tests/serve.js`.
 
 ## Antonio's checks
 
 Tick each one when done. Run `node tests/serve.js` and open http://localhost:8417/ in Chrome.
 
-- [ ] The "Tuning" panel sits bottom left. Click it: 14 sliders, each with a one-line description, plus Replay, Copy values and Reset.
-- [ ] Press T: the panel disappears. Reload: still hidden. Press T again: it's back.
-- [ ] Click Replay at rest: the Norte Reveal plays. Click Replay again while it's open: it plays again from the start.
-- [ ] Make "Flip duration" much longer, then Replay: the letters flip slowly. Reload: the slider kept its value.
-- [ ] With the Reveal open, drag "Air drag" to 40: floating stickers slow down quickly. Drag it to 0: they glide for ages.
-- [ ] With the Reveal open, move "Hitbox tightness": stickers tuck further behind the card (high) or bounce off before reaching it (low).
-- [ ] Click Copy values, paste into a text editor: a list of all 14 values.
-- [ ] Click Reset: the page reloads and the sliders are back to the defaults.
-- [ ] Open the live site (antoniobento.me) after this is deployed: no panel, and T does nothing.
+- [x] The "Tuning" panel sits bottom left. Click it: 14 sliders, each with a one-line description, plus Replay, Copy values and Reset.
+- [x] Press T: the panel disappears. Reload: still hidden. Press T again: it's back.
+- [x] Click Replay at rest: the Norte Reveal plays. Click Replay again while it's open: it plays again from the start.
+- [x] Make "Flip duration" much longer, then Replay: the letters flip slowly. Reload: the slider kept its value.
+- [x] With the Reveal open, drag "Air drag" to 40: floating stickers slow down quickly. Drag it to 0: they glide for ages.
+- [x] With the Reveal open, move "Hitbox tightness": stickers tuck further behind the card (high) or bounce off before reaching it (low).
+- [x] ~~Click Copy values, paste into a text editor: a list of all 14 values.~~ (replaced by Save)
+- [x] Click Reset: the page reloads and the sliders are back to the defaults.
+- [ ] Move a slider, click Save: the button says "Saved ✓", and `public/portals/choreography.js` shows the new number (VS Code: Source Control lists it as changed).
+- [ ] Move that slider again (don't save), click Reset: it goes back to the value you saved, not the old default.
+- [ ] Stop the server, click Save: a message says it was not saved.
+- [x] Open the live site (antoniobento.me) after this is deployed: no panel, and T does nothing.

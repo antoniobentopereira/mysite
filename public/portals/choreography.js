@@ -1,6 +1,8 @@
 // Choreography: the Reveal's tuning values (Antonio's, from the prototype)
 // and when each step of the intro happens. Times are in ms from the click;
 // the other values say their unit.
+// The tuning panel's Save (local only) rewrites the numbers in TIMINGS below,
+// so keep each one as "name: number," on its own line.
 //
 //   0           colour burst starts, the clicked letter turns into the Hero
 //   chain       other letters flip into Tokens, nearest first, one at a time
