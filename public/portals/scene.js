@@ -73,8 +73,8 @@ function buildStudio(THREE, renderer, color) {
  *     heroes/norte-3d.js); its objects are built in a 200 x 200 box
  *   heroColor: its colour
  *   stage: the Reveal's HTML layer (over the canvas): Tokens are grabbed on it,
- *     its Hero slot is where the Hero lands, and the Hero, word, card and lever
- *     become solid once it has
+ *     its Hero slot is where the Hero lands (and then spins), and its word, card
+ *     and lever become solid once it has
  *   atEnd: skip the intro (direct #norte links, Back from the Destination)
  *   onFirstFrame: called once the scene covers the title (time to hide it)
  * Returns { canvas, launchMs, finish(), launch(), land(), close() -> Promise, destroy() },
@@ -226,7 +226,8 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
   };
   const heroEndNow = () => { const slot = heroSlot.getBoundingClientRect(); return { ...centre(slot), size: Math.min(slot.width, slot.height), rz: 0 }; };
   let heroStart = heroStartFor(heroLetter), heroEnd = heroEndNow();
-  const hero = { pose: { ...heroStart, ry: 0, s: 1, back: false, turn: HERO_TURN_START }, grow: 0 };
+  // spin: its turn around its upright axis once it has landed (radians, keeps growing)
+  const hero = { pose: { ...heroStart, ry: 0, s: 1, back: false, turn: HERO_TURN_START }, grow: 0, spin: 0 };
   const hero3d = createHero(THREE, { color: heroColor });
   const heroObj = hero3d.object, heroTilt = new THREE.Group();
   heroObj.rotation.set(HERO_TILT.x, HERO_TILT.y, 0, 'YXZ');
@@ -235,6 +236,23 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
   scene.add(heroTilt);
   const heroLetterMesh = card(2);
   heroLetterMesh.material.map = heroLetter.tex;
+
+  // The spin: once the intro is over (plus P.spinDelay) the Hero turns round and
+  // round its upright axis at P.spinSpeed, easing in. The lights stay put, so its
+  // shading and highlights change as it turns.
+  let spinFrom = null; // intro time (ms) the spin starts at; null: not yet
+  const SPIN_EASE_MS = 1200;
+  function spinFrame(t, dt) {
+    if (spinFrom === null && t >= tl.spinAt) spinFrom = t;
+    if (spinFrom === null || t < spinFrom || launchAt) return;
+    const ease = easeInOut(clamp01((t - spinFrom) / SPIN_EASE_MS));
+    hero.spin += P.spinSpeed * DEG * (dt / 1000) * ease;
+  }
+  // The Hero's spin as drawn: launching, it turns back to face front first
+  function spinNow(now) {
+    if (!launchAt) return hero.spin;
+    return normAngle(hero.spin) * (1 - easeOut(clamp01((now - launchAt) / (LAUNCH_MS * 0.3))));
+  }
 
   // The launch (the lever fired): a little pull back, then off-screen along the arrow
   let launchAt = 0, launchDir = ARROW_DIR;
@@ -246,8 +264,10 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
     const far = Math.hypot(W, H) * 1.3, d = -0.12 * heroEnd.size * back + far * go;
     return { dx: launchDir.x * d, dy: launchDir.y * d, s: 1 - 0.06 * back + 0.25 * go };
   }
-  // Which way the arrow points on screen as it is drawn now (turned in 3D)
+  // Which way the arrow points on screen once it faces front (turned in 3D)
   function arrowOnScreen() {
+    const p = hero.pose;
+    poseHero(p.x, p.y, p.size * p.s, p.rz, p.ry, p.turn, 0);
     heroTilt.updateMatrixWorld(true);
     camera.updateMatrixWorld();
     const toScreen = (x, y) => { const p = new THREE.Vector3(x, y, 0).applyMatrix4(heroObj.matrixWorld).project(camera); return { x: p.x * W, y: -p.y * H }; };
@@ -255,14 +275,14 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
     const l = Math.hypot(b.x - a.x, b.y - a.y);
     return l > 0 ? { x: (b.x - a.x) / l, y: (b.y - a.y) / l } : ARROW_DIR;
   }
-  // Pose the Hero group for screen point (x, y), box size `size`, spin rz, flip ry,
-  // `turn` (0..1) of its own tilt
-  function poseHero(x, y, size, rz, ry, turn) {
+  // Pose the Hero group for screen point (x, y), box size `size`, tilt rz in the
+  // screen plane, flip ry, `turn` (0..1) of its own 3D turn, and its spin
+  function poseHero(x, y, size, rz, ry, turn, spin) {
     heroTilt.position.set(x - W / 2, H / 2 - y, 0);
     heroTilt.scale.setScalar(Math.max(size, 0.01) / 200);
     heroTilt.rotation.set(0, ry, -rz);
     heroObj.rotation.x = HERO_TILT.x * turn;
-    heroObj.rotation.y = HERO_TILT.y * turn;
+    heroObj.rotation.y = HERO_TILT.y * turn + spin; // around the upright axis (outermost)
   }
   function showHero(now) {
     const p = hero.pose;
@@ -271,20 +291,8 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
     if (p.back) {
       hero3d.setGrow(hero.grow);
       const l = launchOffset(now);
-      poseHero(p.x + l.dx, p.y + l.dy, p.size * p.s * l.s, p.rz, p.ry, p.turn);
+      poseHero(p.x + l.dx, p.y + l.dy, p.size * p.s * l.s, p.rz, p.ry, p.turn, spinNow(now));
     } else place(heroLetterMesh, heroLetter.x, heroLetter.y, heroLetter.w * p.s, heroLetter.h * p.s, 0, p.ry);
-  }
-  // The landed Hero's outline on screen: its 3D pieces as they are drawn there
-  function heroShapes() {
-    poseHero(heroEnd.x, heroEnd.y, heroEnd.size, 0, 0, 1);
-    heroTilt.updateMatrixWorld(true);
-    camera.updateMatrixWorld(); // it may not have drawn yet (first frame) or just moved (resize)
-    return hero3d.pieces().map((piece) => ({
-      points: piece.map((v) => {
-        const p = v.clone().applyMatrix4(heroObj.matrixWorld).project(camera);
-        return { x: (p.x + 1) / 2 * W, y: (1 - p.y) / 2 * H };
-      }),
-    }));
   }
 
   // ---------- Physics ----------
@@ -297,9 +305,9 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
     for (let n = el; n && n !== stage; n = n.offsetParent) { x += n.offsetLeft; y += n.offsetTop; }
     return { x, y, w: el.offsetWidth, h: el.offsetHeight };
   }
-  // Once the Hero has landed, it, the word, the lever and the card are solid,
-  // each with a hitbox shaped like what you see:
-  //   Hero   its real 3D shape (strokes, head), as it is drawn on screen
+  // Once the Hero has landed, the word, the lever and the card are solid, each
+  // with a hitbox shaped like what you see. (The Hero has none: it spins, and
+  // Tokens drift behind it, where they can still be grabbed.)
   //   word   one box per letter
   //   lever  its box, stick and round ball (as it stands upright), and its label
   //   card   its rounded box, shrunk by the hitbox tightness (P.solidInset): the
@@ -307,7 +315,7 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
   const radiusOf = (el) => parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0;
   function makeSolid() {
     solid = true;
-    const shapes = heroShapes();
+    const shapes = [];
     stage.querySelectorAll('.reveal-word .w').forEach((el) => shapes.push(layoutBox(el)));
     const part = (sel) => stage.querySelector(sel);
     const inset = P.solidInset;
@@ -351,6 +359,7 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
 
     if (!exploded && t >= tl.explodeAt) explode();
     if (!solid && t >= tl.arriveAt) makeSolid();
+    spinFrame(t, dt);
     const shrink = 1 - Math.exp(-dt / (P.shrink / 3));
     for (const tk of tokens) {
       if (tk.body) {
@@ -381,6 +390,7 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
     // The Hero: the tail shrinks back, it flies home, then flips back into the N
     const h = closeFrom.hero, m = easeInOut(clamp01((t - 300) / 600));
     hero.grow = h.grow * (1 - easeInOut(clamp01(t / 300)));
+    hero.spin = h.spin * (1 - easeInOut(clamp01(t / 500))); // unwinds to face front
     hero.pose = { x: lerp(h.x, heroStart.x, m), y: lerp(h.y, heroStart.y, m), size: lerp(h.size, heroStart.size, m), rz: lerp(h.rz, 0, m), s: 1, turn: lerp(h.turn, HERO_TURN_START, m) };
     if (h.back) {
       const u = t - 900;
@@ -464,9 +474,11 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
       launchDir = arrowOnScreen();
       launchAt = performance.now();
     },
-    /** Back from the Destination: the Hero is in its spot again. */
+    /** Back from the Destination: the Hero is in its spot again, facing front; it spins again after the spin delay. */
     land() {
       launchAt = 0;
+      hero.spin = 0;
+      spinFrom = performance.now() - t0 + P.spinDelay;
     },
     /** Play the reassembly. Resolves when the title is whole again. */
     close() {
@@ -476,7 +488,7 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
       launchAt = 0;
       closeFrom = {
         tokens: tokens.map((tk) => ({ ...tk.pose, rz: normAngle(tk.pose.rz), k: tk.k })),
-        hero: { ...p, x: p.x + l.dx, y: p.y + l.dy, size: p.size * l.s, grow: hero.grow },
+        hero: { ...p, x: p.x + l.dx, y: p.y + l.dy, size: p.size * l.s, grow: hero.grow, spin: normAngle(spinNow(performance.now())) },
       };
       world.destroy();
       tokens.forEach((tk) => { tk.body = null; });

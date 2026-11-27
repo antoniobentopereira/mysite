@@ -11,6 +11,7 @@
 //   arriveAt    the Hero has landed: it grows, the word spells out
 //   cardAt      the card and Enter control appear
 //   openAt      the intro is over (phase "open")
+//   spinAt      the Hero starts spinning (and keeps going)
 
 export const TIMINGS = {
   burst: 1200, // colour burst fills the screen
@@ -23,6 +24,8 @@ export const TIMINGS = {
   shrink: 400, // Tokens go from letter size to Token size
   heroFly: 1200, // Hero fly-in
   heroDelay: 100, // wait after the explosion before the Hero moves
+  spinDelay: 600, // after the intro, wait this long before the Hero starts spinning
+  spinSpeed: 50, // the Hero's spin (degrees per second)
   gravity: 0.5, // Toy box only: how strongly Tokens fall
   drag: 4, // Zero-g air drag (x1000)
   solidInset: 16, // hitbox tightness (ticket 05)
@@ -37,5 +40,6 @@ export function timeline(P, count) {
   const explodeAt = P.morphStart + Math.max(0, count - 1) * P.stagger + P.morphDur + P.hold;
   const heroAt = explodeAt + P.heroDelay;
   const arriveAt = heroAt + P.heroFly;
-  return { explodeAt, heroAt, arriveAt, cardAt: arriveAt + 200, openAt: arriveAt + 650 };
+  const openAt = arriveAt + 650;
+  return { explodeAt, heroAt, arriveAt, cardAt: arriveAt + 200, openAt, spinAt: openAt + P.spinDelay };
 }

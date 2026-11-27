@@ -27,6 +27,9 @@ Notes:
 - Realism pass (Antonio's request): glossy yellow car paint with a clear coat. Its sharp highlights reflect a small photo studio built in code (`buildStudio` in scene.js: dark room, softboxes well off to the sides, warm floor glow; no image file) set as the scene's environment, so later 3D Tokens get the same reflections. Plates: thin dark seams (over the front, the rounded edges and the side walls) at the stem's middle, the two corners and the tail's middle; 12 small, low, painted rivets beside the seams and at the stem's foot. Seams and rivets on the tail appear as it grows.
 - Hairline between the arrowhead and the shaft: fixed. Head and shaft are now one outline (one solid), not two overlapping ones, and the camera's depth range hugs the scene so nearly touching surfaces no longer flicker.
 - Three.js copy: 5 more parts (clear-coat material, studio reflection, boxes, spheres). The first Reveal is 209 KB compressed.
+- Spin (Antonio's request, like Norte's own site): once the intro is over, plus the spin delay, the Hero spins round its upright axis, easing in. Lights stay put, so its shading and highlights change as it turns. Seams and rivets are on its back too. Lever fired: it turns back to face front during the pull-back, then launches along its arrow. Closing: it unwinds to face front on the way home. Back from VC Map: it faces front, then spins again after the delay.
+- Tuning: "Hero spin delay (ms)" (default 600, on Replay) and "Hero spin speed (deg/s)" (default 50, live; 0 = still).
+- No Hero hitbox any more (Antonio's decision): Tokens drift behind it and can be grabbed there. Word, lever and card stay solid.
 
 ## Antonio's checks
 
@@ -49,3 +52,11 @@ Realism pass:
 - [ ] A few small, low, yellow rivets sit beside the seams and at the stem's foot; the tail's seam and rivets appear as the tail grows.
 - [ ] No hairline between the arrowhead and the shaft: they read as one piece.
 - [ ] Narrow window: still bright yellow (not dull or washed out).
+
+Spin:
+
+- [ ] Shortly after the card appears, the Hero starts spinning (gently, not with a jump) and keeps going; its light and highlights change as it turns, and its back shows seams and rivets too.
+- [ ] Tuning panel: "Hero spin speed" changes the speed right away (0 stops it); "Hero spin delay" changes when it starts (press Replay to see it).
+- [ ] Stickers drift behind the spinning Hero, and you can still grab one there.
+- [ ] Push the lever while it is turned away: it turns to face you, then shoots off up-right.
+- [ ] Press Esc while it is turned away: it turns to face you on its way home into the N.

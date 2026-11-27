@@ -10,10 +10,9 @@
 //                size / 200 to make the box `size` px wide.
 //   setGrow(g)   0 = a clean N (stem and diagonal, no tail),
 //                1 = the tail has grown into the rising arrow, head on its tip
-//   pieces()     the fully grown Hero's shape, for its hitbox: a list of convex
-//                pieces, each a list of corner points (THREE.Vector3, in the
-//                group's units, front and back), one per stroke and one for the head
 //   dispose()
+// It has no hitbox: it spins once landed, and Tokens float behind it freely (and
+// can still be grabbed there).
 // The paint's highlights come from the scene's environment (scene.js builds a
 // small studio for it); without one it still looks right, only less glossy.
 
@@ -109,8 +108,8 @@ export function createHero(THREE, { color }) {
   const parts = []; // { obj, show(state) }
   const add = (obj, show = () => true) => { group.add(obj); parts.push({ obj, show }); return obj; };
 
-  // A seam across the line at p: a groove over the front face, down both rounded
-  // edges and along both side walls.
+  // A seam across the line at p: a groove over the front and back faces, over
+  // all four rounded edges and along both side walls (it spins: every side shows).
   function seam(p, { dir, reach }, show) {
     const g = new THREE.Group(), [x, y] = toGroup(p), front = DEPTH / 2;
     g.position.set(x, y, 0);
@@ -122,21 +121,26 @@ export function createHero(THREE, { color }) {
       m.rotation.y = ry;
       g.add(m);
     };
-    piece(2 * reach, 0.3, 0, front); // over the front face
     const wall = reach * (WIDTH / 2 + BEVEL_OUT + 0.1) / (WIDTH / 2);
     piece(2 * wall, DEPTH - 2 * BEVEL, 0, 0); // pokes out of both side walls
-    // Over the rounded edges, from the front face's edge to the wall's top
+    // Over a face, and over its rounded edges from the face's edge to the wall
     const run = wall - reach, len = Math.hypot(run, BEVEL), lift = 0.3;
     const [ox, oz] = [BEVEL / len * lift, run / len * lift]; // lifted off the curve a little
-    for (const s of [1, -1]) piece(len, 0.6, s * ((reach + wall) / 2 + ox), front - BEVEL / 2 + oz, Math.atan2(s * BEVEL, run));
+    for (const f of [1, -1]) { // front, back
+      piece(2 * reach, 0.3, 0, f * front);
+      for (const s of [1, -1]) piece(len, 0.6, s * ((reach + wall) / 2 + ox), f * (front - BEVEL / 2 + oz), Math.atan2(s * f * BEVEL, run));
+    }
     return add(g, show);
   }
-  // A small, low, painted rivet on the front face at p
+  // A small, low, painted rivet at p, on the front face and the same on the back.
+  // Returns the two, so they can be moved.
   function rivet(p, show) {
-    const m = mesh(dome, paint), [x, y] = toGroup(p);
-    m.scale.set(RIVET, RIVET, RIVET * RIVET_RISE);
-    m.position.set(x, y, DEPTH / 2);
-    return add(m, show);
+    return [1, -1].map((f) => {
+      const m = mesh(dome, paint), [x, y] = toGroup(p);
+      m.scale.set(RIVET, RIVET, RIVET * RIVET_RISE);
+      m.position.set(x, y, f * DEPTH / 2);
+      return add(m, show);
+    });
   }
   // Two rivets beside a seam, near both edges of the line, on the plate `d` points to
   function rivets(p, { dir, reach }, d, show) {
@@ -189,33 +193,17 @@ export function createHero(THREE, { color }) {
     // The head's rivets ride on the tip
     const state = { tail, head: head ? headS : 0 };
     const behind = along(base, TAIL_DIR, -RIVET_STEP);
-    for (const [m, s] of headRivets) { const [x, y] = toGroup(along(behind, TAIL_ACROSS, s)); m.position.set(x, y, DEPTH / 2); }
+    for (const [pair, s] of headRivets) {
+      const [x, y] = toGroup(along(behind, TAIL_ACROSS, s));
+      for (const m of pair) m.position.set(x, y, m.position.z);
+    }
     for (const p of parts) p.obj.visible = p.show(state);
   }
   setGrow(0);
 
-  function pieces() {
-    const half = WIDTH / 2 + BEVEL_OUT, z = DEPTH / 2;
-    const both = (pts) => pts.flatMap(([u, v]) => { const [x, y] = toGroup([u, v]); return [new THREE.Vector3(x, y, z), new THREE.Vector3(x, y, -z)]; });
-    const pts = [...STEM, TAIL_END], out = [];
-    for (let i = 0; i < pts.length - 1; i++) {
-      const [ax, ay] = pts[i], [bx, by] = pts[i + 1];
-      const [ux, uy] = unit(pts[i], pts[i + 1]);
-      // Corners between strokes stick out a little: reach half a width past them
-      const a0 = i > 0 ? half : 0, b0 = i < pts.length - 2 ? half : 0;
-      const A = [ax - ux * a0, ay - uy * a0], B = [bx + ux * b0, by + uy * b0];
-      const nx = -uy * half, ny = ux * half;
-      out.push(both([[A[0] + nx, A[1] + ny], [B[0] + nx, B[1] + ny], [B[0] - nx, B[1] - ny], [A[0] - nx, A[1] - ny]]));
-    }
-    const [hx, hy] = TAIL_END, [ux, uy] = TAIL_DIR, L = HEAD_LEN + BEVEL_OUT, Bh = HEAD_HALF + BEVEL_OUT;
-    out.push(both([[hx + ux * L, hy + uy * L], [hx + uy * Bh, hy - ux * Bh], [hx - uy * Bh, hy + ux * Bh]]));
-    return out;
-  }
-
   return {
     object: group,
     setGrow,
-    pieces,
     dispose() { body.geometry.dispose(); box.dispose(); dome.dispose(); paint.dispose(); seamPaint.dispose(); },
   };
 }
