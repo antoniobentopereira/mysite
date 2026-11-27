@@ -42,17 +42,27 @@ function flipPose(u, dur) {
  *   tokens: [{ name, src }] for the other letters, in title order
  *   drawHero(ctx, { grow }): draws the flat Hero in a 200 x 200 box
  *     (see heroes/norte-flat.js); the 3D Hero replaces it in ticket 07
- *   heroSlot: element whose box is where the Hero lands
+ *   stage: the Reveal's HTML layer (over the canvas): Tokens are grabbed on it,
+ *     and its Hero slot, word, card and lever become solid once the Hero lands
  *   atEnd: skip the intro (direct #norte links, Back from the Destination)
  *   onFirstFrame: called once the scene covers the title (time to hide it)
- * Returns { canvas, finish(), close() -> Promise, destroy() }.
+ * Returns { canvas, finish(), close() -> Promise, destroy() }, or null without WebGL.
+ *
+ * Resizing the window (or rotating a phone) re-lays everything out to the new
+ * screen. While the tab is hidden the scene and its physics are paused.
  */
-export function createScene(libs, { color, letters, heroIndex, tokens: tokenList, drawHero, heroSlot, P, mode, atEnd, onFirstFrame }) {
+export function createScene(libs, { color, letters, heroIndex, tokens: tokenList, drawHero, stage, P, mode, atEnd, onFirstFrame }) {
   const { THREE, Matter } = libs;
-  const W = innerWidth, H = innerHeight;
+  const heroSlot = stage.querySelector('.reveal-hero');
+  let W = innerWidth, H = innerHeight;
   const S = Math.max(54, Math.min(112, Math.min(W, H) * 0.14)); // Token size, px
   const tl = timeline(P, tokenList.length);
 
+  // No WebGL 2 (old device, turned off): no scene, the simple Reveal is used.
+  // Asked first, so Three.js doesn't log an error trying.
+  const probe = document.createElement('canvas').getContext('webgl2');
+  if (!probe) return null;
+  probe.getExtension('WEBGL_lose_context')?.loseContext(); // browsers allow only a few at once
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.setSize(W, H);
@@ -65,8 +75,9 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
   const camera = new THREE.PerspectiveCamera(FOV, W / H, 1, 10000);
   camera.position.z = H / 2 / Math.tan((FOV / 2) * DEG);
 
-  const textures = [];
+  let textures = [];
   const keep = (tex) => { tex.colorSpace = THREE.SRGBColorSpace; textures.push(tex); return tex; };
+  const drop = (tex) => { tex.dispose(); textures = textures.filter((t) => t !== tex); };
   const quad = new THREE.PlaneGeometry(1, 1);
   const material = (map) => new THREE.MeshBasicMaterial({ map, transparent: true, depthTest: false, depthWrite: false });
   function card(order) {
@@ -120,8 +131,10 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
   burst.renderOrder = 0;
   scene.add(burst);
   const heroSpan = letters[heroIndex];
-  const origin = letterBox(heroSpan);
-  const R = Math.hypot(W, H) * 1.05;
+  let origin = letterBox(heroSpan);
+  // Big enough to cover the screen's farthest corner from the burst's origin
+  const burstRadius = () => Math.hypot(Math.max(origin.x, W - origin.x), Math.max(origin.y, H - origin.y)) * 1.05;
+  let R = burstRadius();
   const setBurst = (r) => { burst.position.set(origin.x - W / 2, H / 2 - origin.y, 0); burst.scale.set(Math.max(r, 0.01), Math.max(r, 0.01), 1); };
 
   // ---------- Tokens: one per other letter ----------
@@ -130,7 +143,7 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
     const letter = letterTexture(span);
     const k0 = (span.offsetHeight * 0.8) / S; // in place, a Token is about letter size
     return {
-      mesh: card(1), letter, sticker: imageTexture(tokenList[i].src, 256), k0,
+      span, mesh: card(1), letter, sticker: imageTexture(tokenList[i].src, 256), k0,
       home: { x: letter.x, y: letter.y }, rank: 0, body: null, k: k0,
       pose: { x: letter.x, y: letter.y, rz: 0, ry: 0, s: 1, back: false },
     };
@@ -138,8 +151,8 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
   // Chain order: nearest to the Portal letter first
   [...tokens].sort((a, b) => Math.hypot(a.home.x - origin.x, a.home.y - origin.y) - Math.hypot(b.home.x - origin.x, b.home.y - origin.y))
     .forEach((t, rank) => { t.rank = rank; });
-  const titleRect = heroSpan.closest('.title').getBoundingClientRect();
-  const blastFrom = centre(titleRect); // the middle of the whole name, so they scatter every way
+  const blastCentre = () => centre(heroSpan.closest('.title').getBoundingClientRect());
+  let blastFrom = blastCentre(); // the middle of the whole name, so they scatter every way
 
   function drawToken(t) {
     const p = t.pose;
@@ -152,11 +165,10 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
   // The clicked letter flips (like the other letters) into a clean N drawn on a
   // square canvas, which is redrawn while its tail grows. In the letter's spot it is
   // scaled so the Hero's N matches the letter.
-  const heroLetter = letterTexture(heroSpan);
-  const size0 = heroSpan.offsetHeight / 0.6;
-  const heroStart = { x: heroLetter.x + 0.15 * size0, y: heroLetter.y - 0.075 * size0, size: size0, rz: 0 };
-  const slot = heroSlot.getBoundingClientRect();
-  const heroEnd = { ...centre(slot), size: Math.min(slot.width, slot.height), rz: 0 };
+  let heroLetter = letterTexture(heroSpan);
+  const heroStartFor = (l) => { const size = heroSpan.offsetHeight / 0.6; return { x: l.x + 0.15 * size, y: l.y - 0.075 * size, size, rz: 0 }; };
+  const heroEndNow = () => { const slot = heroSlot.getBoundingClientRect(); return { ...centre(slot), size: Math.min(slot.width, slot.height), rz: 0 }; };
+  let heroStart = heroStartFor(heroLetter), heroEnd = heroEndNow();
   const hero = { pose: { ...heroStart, ry: 0, s: 1, back: false }, grow: 0 };
 
   const HERO_PX = 1024;
@@ -186,8 +198,27 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
   }
 
   // ---------- Physics ----------
-  const world = createWorld(Matter, P, { mode });
-  let exploded = false;
+  const world = createWorld(Matter, P, { mode, element: stage });
+  let exploded = false, solid = false;
+  // Where an element of the stage sits, without its transform (the card still
+  // slides in when it becomes solid). The stage is fixed at the top left.
+  function layoutBox(el) {
+    let x = 0, y = 0;
+    for (let n = el; n && n !== stage; n = n.offsetParent) { x += n.offsetLeft; y += n.offsetTop; }
+    return { x, y, w: el.offsetWidth, h: el.offsetHeight };
+  }
+  // Once the Hero has landed, it, the word, the lever and the card are solid.
+  // The arrow only fills the middle of the Hero's square, so that box shrinks more.
+  function makeSolid() {
+    solid = true;
+    const hb = layoutBox(heroSlot);
+    const boxes = [{ ...hb, pad: Math.min(hb.w, hb.h) * 0.12 }];
+    for (const sel of ['.reveal-word', '.lever', '.lever-label', '.reveal-card']) {
+      const el = stage.querySelector(sel);
+      if (el) boxes.push(layoutBox(el));
+    }
+    world.setSolids(boxes);
+  }
   function explode() {
     exploded = true;
     for (const t of tokens) {
@@ -214,6 +245,7 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
     hero.grow = easeInOut(clamp01((t - (tl.arriveAt - 150)) / HERO_GROW_MS));
 
     if (!exploded && t >= tl.explodeAt) explode();
+    if (!solid && t >= tl.arriveAt) makeSolid();
     const shrink = 1 - Math.exp(-dt / (P.shrink / 3));
     for (const tk of tokens) {
       if (tk.body) {
@@ -252,17 +284,55 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
     } else Object.assign(hero.pose, { ry: lerp(h.ry, 0, m), back: false });
   }
 
+  // ---------- Resize / rotation: re-lay everything out to the new screen ----------
+  // (Tokens keep their size; the walls move and any Token left off-screen comes back.)
+  function relayout() {
+    W = innerWidth; H = innerHeight;
+    renderer.setSize(W, H);
+    camera.aspect = W / H;
+    camera.position.z = H / 2 / Math.tan((FOV / 2) * DEG);
+    camera.updateProjectionMatrix();
+    world.resize(W, H);
+    // The (hidden) HTML title has re-laid out too: the letters' homes move with it
+    origin = letterBox(heroSpan);
+    R = burstRadius();
+    blastFrom = blastCentre();
+    for (const tk of tokens) {
+      drop(tk.letter.tex);
+      tk.letter = letterTexture(tk.span);
+      tk.k0 = (tk.span.offsetHeight * 0.8) / S;
+      tk.home = { x: tk.letter.x, y: tk.letter.y };
+      if (!tk.body && !closing) { tk.pose.x = tk.home.x; tk.pose.y = tk.home.y; if (!exploded) tk.k = tk.k0; }
+    }
+    drop(heroLetter.tex);
+    heroLetter = letterTexture(heroSpan);
+    heroLetterMesh.material.map = heroLetter.tex;
+    heroStart = heroStartFor(heroLetter);
+    heroEnd = heroEndNow();
+    if (solid && !closing) makeSolid();
+  }
+  let resized = false;
+  const onResize = () => { resized = true; };
+  addEventListener('resize', onResize);
+
   // ---------- Frame loop ----------
   let t0 = performance.now() - (atEnd ? tl.openAt : 0);
-  let last = 0, raf = 0, first = true, closing = null, closeStart = 0;
+  let last = 0, raf = 0, first = true, closing = null, closeStart = 0, done = false;
+  // A hidden tab: stop drawing and stepping the physics; carry on when it comes back
+  const onVisibility = () => {
+    cancelAnimationFrame(raf);
+    if (!document.hidden && !done) { last = 0; raf = requestAnimationFrame(frame); }
+  };
+  document.addEventListener('visibilitychange', onVisibility);
   function frame(now) {
     raf = requestAnimationFrame(frame);
+    if (resized) { resized = false; relayout(); }
     const dt = last ? now - last : 16;
     last = now;
     if (closing) {
       const t = now - closeStart;
       closeFrame(t);
-      if (t >= CLOSE_MS) { closing.resolve(); closing = null; cancelAnimationFrame(raf); }
+      if (t >= CLOSE_MS) { closing.resolve(); closing = null; done = true; cancelAnimationFrame(raf); }
     } else {
       introFrame(now - t0, dt);
       world.update(dt);
@@ -296,7 +366,10 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
       return promise;
     },
     destroy() {
+      done = true;
       cancelAnimationFrame(raf);
+      removeEventListener('resize', onResize);
+      document.removeEventListener('visibilitychange', onVisibility);
       world.destroy();
       textures.forEach((t) => t.dispose());
       scene.traverse((o) => { o.geometry?.dispose(); o.material?.dispose(); });

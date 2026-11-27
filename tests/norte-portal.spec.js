@@ -136,6 +136,90 @@ test.describe('reduced motion', () => {
   });
 });
 
+test.describe('when the 3D Reveal cannot run', () => {
+  const expectSimpleReveal = async (page) => {
+    await page.goto('./');
+    await portalN(page).click();
+    await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'open');
+    await expect(revealState(page)).toHaveAttribute('data-reveal-fallback', 'true');
+    await expect(page.locator('canvas')).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Norte: a VC map' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Enter Norte: a VC map' })).toBeVisible();
+  };
+
+  test('no WebGL: the simple Reveal is used', async ({ page }) => {
+    // A device without WebGL: canvases can't give a WebGL context
+    await page.addInitScript(() => {
+      const get = HTMLCanvasElement.prototype.getContext;
+      HTMLCanvasElement.prototype.getContext = function (kind, ...rest) {
+        return /webgl/i.test(kind) ? null : get.call(this, kind, ...rest);
+      };
+    });
+    await expectSimpleReveal(page);
+  });
+
+  test('the 3D library fails to download: the simple Reveal is used', async ({ page }) => {
+    await page.route('**/portals/vendor/three.min.js', (r) => r.abort());
+    await expectSimpleReveal(page);
+    errors = errors.filter((e) => !e.includes('three.min.js')); // the failed download itself is expected
+  });
+});
+
+test('grabbing and flinging around the Reveal never steals a click from the lever or ✕', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('./');
+  await portalN(page).click();
+  await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'open');
+  // Fling all over the screen, where the Tokens float (and across the card)
+  for (const [x, y, dx, dy] of [[100, 100, 300, 200], [600, 700, -400, -300], [1100, 150, -900, 500], [200, 600, 1000, -100]]) {
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x + dx, y + dy, { steps: 8 });
+    await page.mouse.up();
+  }
+  await expect(page).toHaveURL(/#norte$/); // none of that launched or closed it
+  await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'open');
+  await page.getByRole('button', { name: 'Close' }).click();
+  await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'rest');
+});
+
+test('rotating or resizing an open Reveal re-lays it out to the new screen', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('./');
+  await portalN(page).click();
+  await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'open');
+  await page.setViewportSize({ width: 390, height: 844 }); // a phone, upright
+  const canvas = page.locator('canvas');
+  await expect(canvas).toHaveAttribute('width', '390'); // the scene now draws at the new size
+  await expect(canvas).toHaveAttribute('height', '844');
+  await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'open');
+  for (const el of [page.locator('.reveal-card'), page.getByRole('button', { name: 'Enter Norte: a VC map' })]) {
+    const box = await el.boundingBox();
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(390);
+    expect(box.y + box.height).toBeLessThanOrEqual(844);
+  }
+  // Closing after a resize still reassembles the title
+  await page.keyboard.press('Escape');
+  await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'rest');
+});
+
+test('the first Reveal downloads at most ~300 KB compressed', async ({ page, baseURL }) => {
+  const { gzipSync } = await import('node:zlib');
+  const bodies = []; // everything from our site: the homepage, then the Reveal
+  page.on('response', (r) => {
+    if (r.url().startsWith(baseURL)) bodies.push(r.body().catch(() => Buffer.alloc(0)));
+  });
+  await page.goto('./');
+  await portalN(page).click();
+  await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'open');
+  await expect(page.locator('canvas')).toHaveCount(1);
+  // Our test server doesn't compress; Cloudflare does (gzip or better)
+  const total = (await Promise.all(bodies)).reduce((sum, b) => sum + gzipSync(b).length, 0);
+  console.log(`first Reveal: ${(total / 1024).toFixed(0)} KB compressed`);
+  expect(total).toBeLessThanOrEqual(300 * 1024);
+});
+
 test.describe('closing the Norte Reveal', () => {
   const ways = {
     '✕': (page) => page.getByRole('button', { name: 'Close' }).click(),

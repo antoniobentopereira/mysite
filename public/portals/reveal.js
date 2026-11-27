@@ -119,7 +119,7 @@ function createSceneFor(libs, dest, letters) {
     heroIndex: dest.letterIndex,
     tokens: dest.tokens,
     drawHero: libs.drawHero,
-    heroSlot: stage.querySelector('.reveal-hero'),
+    stage,
     P: TIMINGS,
     mode: GRAVITY_MODE,
     atEnd: phase !== 'intro',
@@ -253,6 +253,11 @@ function buildStage(name, dest, onRequestClose) {
   el.querySelector('.reveal-summary').textContent = dest.card.summary;
 
   el.querySelector('.reveal-close').addEventListener('click', onRequestClose);
+  // Tokens are grabbed on the stage (mouse and touch events). A press on the
+  // close button, the card or the lever is theirs: it never grabs a Token too.
+  el.querySelectorAll('.reveal-close, .reveal-card, .lever-wrap').forEach((part) => {
+    ['mousedown', 'touchstart'].forEach((n) => part.addEventListener(n, (e) => e.stopPropagation(), { passive: true }));
+  });
   // A click or tap during the intro only skips to the end (it doesn't also
   // press the lever, say)
   el.addEventListener('pointerdown', (e) => {
