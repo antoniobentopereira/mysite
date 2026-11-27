@@ -6,7 +6,7 @@ Spec: `.scratch/letter-portals/spec.md`.
 
 **Blocked by:** 01
 
-**Status:** ready-for-human (built; waiting for Antonio's checks below)
+**Status:** done
 
 - [x] Only Portal letters get idle charges; non-portal letters are unchanged.
 - [x] Charges are sporadic (average ~9 s) and pause while a Reveal is open or the tab is hidden.
@@ -30,4 +30,4 @@ Tick each one when done. Run `node tests/serve.js` and open http://localhost:841
 
 Round 2 (Antonio's feedback: the page dropped when the hint left):
 
-- [ ] When the hint pops away, nothing else moves: the title and corners stay exactly where they were.
+- [x] When the hint pops away, nothing else moves: the title and corners stay exactly where they were.
