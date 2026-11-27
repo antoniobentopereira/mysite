@@ -6,7 +6,7 @@ Spec: `.scratch/letter-portals/spec.md`. Visual reference: Norte's "N becomes a 
 
 **Blocked by:** 02, 04
 
-**Status:** ready-for-human
+**Status:** done
 
 - [x] The Hero is a real 3D object built in code (no model file), matching the N's size and position at the click.
 - [x] After fly-in, the tail grows into the arrow and the arrowhead appears.
@@ -49,22 +49,22 @@ Tick each one when done. Run `node tests/serve.js` and open http://localhost:841
 
 Realism pass:
 
-- [ ] The Hero looks like glossy yellow car paint: bright yellow, with sharp light lines along its rounded edges and a sheen that moves across it while it flies in.
-- [ ] Thin seams show where its plates meet (middle of the stem, both corners of the N, middle of the tail) and wrap over its sides.
-- [ ] A few small, low, yellow rivets sit beside the seams and at the stem's foot; the tail's seam and rivets appear as the tail grows.
-- [ ] No hairline between the arrowhead and the shaft: they read as one piece.
-- [ ] Narrow window: still bright yellow (not dull or washed out).
+- [x] The Hero looks like glossy yellow car paint: bright yellow, with sharp light lines along its rounded edges and a sheen that moves across it while it flies in.
+- [x] Thin seams show where its plates meet (middle of the stem, both corners of the N, middle of the tail) and wrap over its sides.
+- [x] A few small, low, yellow rivets sit beside the seams and at the stem's foot; the tail's seam and rivets appear as the tail grows.
+- [x] No hairline between the arrowhead and the shaft: they read as one piece.
+- [x] Narrow window: still bright yellow (not dull or washed out).
 
 Spin:
 
-- [ ] Shortly after the card appears, the Hero starts spinning (gently, not with a jump) and keeps going; its light and highlights change as it turns, and its back shows seams and rivets too.
-- [ ] Tuning panel: "Hero spin speed" changes the speed right away (0 stops it); "Hero spin delay" changes when it starts (press Replay to see it).
-- [ ] Stickers drift behind the spinning Hero, and you can still grab one there.
-- [ ] Push the lever while it is turned away: it turns to face you, then shoots off up-right.
-- [ ] Press Esc while it is turned away: it turns to face you on its way home into the N.
+- [x] Shortly after the card appears, the Hero starts spinning (gently, not with a jump) and keeps going; its light and highlights change as it turns, and its back shows seams and rivets too.
+- [x] Tuning panel: "Hero spin speed" changes the speed right away (0 stops it); "Hero spin delay" changes when it starts (press Replay to see it).
+- [x] Stickers drift behind the spinning Hero, and you can still grab one there.
+- [x] Push the lever while it is turned away: it turns to face you, then shoots off up-right.
+- [x] Press Esc while it is turned away: it turns to face you on its way home into the N.
 
 Shape and tilt:
 
-- [ ] The N's top-left corner is a clean, flat corner: no lip or ledge sticking out, from any side while it spins.
-- [ ] The arrow is long, like Norte's, and the whole Hero stays clear of the NORTE word (wide and narrow).
-- [ ] Tuning panel: "Hero tilt back" changes how far it leans back right away; Save keeps your value.
+- [x] The N's top-left corner is a clean, flat corner: no lip or ledge sticking out, from any side while it spins.
+- [x] The arrow is long, like Norte's, and the whole Hero stays clear of the NORTE word (wide and narrow).
+- [x] Tuning panel: "Hero tilt back" changes how far it leans back right away; Save keeps your value.
