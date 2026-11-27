@@ -6,7 +6,7 @@ Spec: `.scratch/letter-portals/spec.md`. Checklist in STATUS.md ("replace stand-
 
 **Blocked by:** 04
 
-**Status:** ready-for-human
+**Status:** done
 
 - [x] 7 SVG files, one per Token, consistent style, each under ~30 KB.
 - [x] They render crisply as sticker cards in the Reveal at Token size and at letter size.
@@ -17,8 +17,8 @@ Spec: `.scratch/letter-portals/spec.md`. Checklist in STATUS.md ("replace stand-
 
 ## Antonio's checks (Chrome, `npm run serve`, then open http://localhost:8417/)
 
-- [ ] Click the N: during the flip, the 7 new stickers appear at letter size and look sharp, not blurry.
-- [ ] Once open, each sticker floats sharp at Token size: folded map, rising arrow, São Paulo flag, term sheet, lightbulb, unicorn, founders graph.
-- [ ] They look like one set (same white edge, shadow and outline) and fit the 3D Hero and the remaining stand-ins.
-- [ ] Round 2: the unicorn and the founders graph read well at small size; "TERM SHEET" is legible; the bulb's white edge at the base is thin enough.
-- [ ] On a phone-size window (DevTools, ~390 px wide) the stickers are still sharp.
+- [x] Click the N: during the flip, the 7 new stickers appear at letter size and look sharp, not blurry.
+- [x] Once open, each sticker floats sharp at Token size: folded map, rising arrow, São Paulo flag, term sheet, lightbulb, unicorn, founders graph.
+- [x] They look like one set (same white edge, shadow and outline) and fit the 3D Hero and the remaining stand-ins.
+- [x] Round 2: the unicorn and the founders graph read well at small size; "TERM SHEET" is legible; the bulb's white edge at the base is thin enough.
+- [x] On a phone-size window (DevTools, ~390 px wide) the stickers are still sharp.
