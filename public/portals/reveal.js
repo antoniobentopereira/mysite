@@ -83,7 +83,11 @@ export function open(name, { instant = false, onRequestClose = () => {} } = {}) 
     const ifStill = (fn) => (...args) => { if (stage === mine) fn(...args); };
     setTimeout(ifStill(() => { if (!scene) useFallback(); }), SLOW_LOAD_MS);
     // The scene draws the letters in the homepage font, so it waits for it too
-    loadLibs().then(async (libs) => { await document.fonts.ready; return libs; })
+    loadLibs().then(async (libs) => {
+      await document.fonts.ready;
+      const { default: drawHero } = await import(dest.hero.src); // the Hero's own code
+      return { ...libs, drawHero };
+    })
       .then(ifStill((libs) => startScene(libs, dest)), ifStill(useFallback));
   }
   return true;
@@ -114,7 +118,7 @@ function createSceneFor(libs, dest, letters) {
     letters,
     heroIndex: dest.letterIndex,
     tokens: dest.tokens,
-    hero: dest.hero,
+    drawHero: libs.drawHero,
     heroSlot: stage.querySelector('.reveal-hero'),
     P: TIMINGS,
     mode: GRAVITY_MODE,

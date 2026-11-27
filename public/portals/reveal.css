@@ -45,7 +45,16 @@
   line-height: 0.85;
   letter-spacing: -0.02em;
   color: var(--reveal-accent);
-  text-shadow: -2px 2px 0 var(--reveal-shade), -4px 4px 0 var(--reveal-shade), -6px 6px 0 var(--k);
+  /* Like the Hero: a thick dark outline and a deep stepped edge going down-left.
+     Sizes are in em, so the depth grows with the word. */
+  -webkit-text-stroke: 0.045em var(--k);
+  paint-order: stroke fill; /* the outline goes outside the letters, not over them */
+  text-shadow:
+    -0.01em 0.01em 0 var(--reveal-shade), -0.02em 0.02em 0 var(--reveal-shade),
+    -0.03em 0.03em 0 var(--reveal-shade), -0.04em 0.04em 0 var(--reveal-shade),
+    -0.05em 0.05em 0 var(--reveal-shade), -0.06em 0.06em 0 var(--reveal-shade),
+    -0.07em 0.07em 0 var(--reveal-shade), -0.08em 0.08em 0 var(--reveal-shade),
+    -0.09em 0.09em 0 var(--k), -0.1em 0.1em 0 var(--k);
 }
 
 .reveal-card {

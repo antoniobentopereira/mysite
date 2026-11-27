@@ -9,6 +9,8 @@ import { timeline, CLOSE_MS } from './choreography.js';
 import { createWorld } from './physics.js';
 
 const FOV = 30; // degrees; small, so flips and tilts get a gentle perspective
+const HERO_MORPH_MS = 600; // the clicked letter becoming the Hero
+const HERO_GROW_MS = 650; // the Hero's tail growing into the rising arrow
 const DEG = Math.PI / 180;
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -39,13 +41,14 @@ function flipPose(u, dur) {
  *   libs: { THREE, Matter }
  *   letters: the title's letter spans, in order; heroIndex: the Portal letter
  *   tokens: [{ name, src }] for the other letters, in title order
- *   hero: { letter: url, grown: url } (the temporary flat Hero art)
+ *   drawHero(ctx, { from, morph, grow }): draws the flat Hero in a 200 x 200 box
+ *     (see heroes/norte-flat.js); the 3D Hero replaces it in ticket 07
  *   heroSlot: element whose box is where the Hero lands
  *   atEnd: skip the intro (direct #norte links, Back from the Destination)
  *   onFirstFrame: called once the scene covers the title (time to hide it)
  * Returns { canvas, finish(), close() -> Promise, destroy() }.
  */
-export function createScene(libs, { color, letters, heroIndex, tokens: tokenList, hero: heroArt, heroSlot, P, mode, atEnd, onFirstFrame }) {
+export function createScene(libs, { color, letters, heroIndex, tokens: tokenList, drawHero, heroSlot, P, mode, atEnd, onFirstFrame }) {
   const { THREE, Matter } = libs;
   const W = innerWidth, H = innerHeight;
   const S = Math.max(54, Math.min(112, Math.min(W, H) * 0.14)); // Token size, px
@@ -96,9 +99,11 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
     ctx.textBaseline = 'alphabetic';
     const m = ctx.measureText(span.textContent);
     // The letter's box is one line high; its text is centred in it the way CSS does
-    const baseline = (r.height + m.fontBoundingBoxAscent - m.fontBoundingBoxDescent) / 2;
-    ctx.fillText(span.textContent, pad, pad + baseline);
-    return { tex: keep(new THREE.CanvasTexture(c)), w, h, x: r.x, y: r.y };
+    const baseline = pad + (r.height + m.fontBoundingBoxAscent - m.fontBoundingBoxDescent) / 2;
+    ctx.fillText(span.textContent, pad, baseline);
+    // Where the ink is, inside this canvas (css px)
+    const ink = { left: pad - m.actualBoundingBoxLeft, right: pad + m.actualBoundingBoxRight, top: baseline - m.actualBoundingBoxAscent, bottom: baseline + m.actualBoundingBoxDescent };
+    return { tex: keep(new THREE.CanvasTexture(c)), canvas: c, ink, color: cs.color, w, h, x: r.x, y: r.y };
   }
   // An SVG file drawn into a texture; until it has loaded the card shows nothing
   function imageTexture(src, px) {
@@ -145,25 +150,58 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
   }
 
   // ---------- Hero (temporary flat art; the 3D Hero comes in ticket 07) ----------
+  // A square canvas, redrawn while the clicked letter morphs into the Hero and while
+  // its tail grows. In the letter's spot it is scaled so the Hero's N matches the letter.
   const heroLetter = letterTexture(heroSpan);
-  const heroMesh = card(2), grownMesh = card(3);
-  const heroTex = imageTexture(heroArt.letter, 512);
-  grownMesh.material.map = imageTexture(heroArt.grown, 512);
-  // In the letter's spot the art is scaled so its N stem matches the letter's height
   const size0 = heroSpan.offsetHeight / 0.6;
   const heroStart = { x: heroLetter.x + 0.15 * size0, y: heroLetter.y - 0.075 * size0, size: size0, rz: 0 };
   const slot = heroSlot.getBoundingClientRect();
   const heroEnd = { ...centre(slot), size: Math.min(slot.width, slot.height), rz: 0 };
-  const hero = { pose: { ...heroStart, ry: 0, s: 1, back: false }, grown: 0 };
+  const hero = { pose: { ...heroStart }, morph: 0, grow: 0 };
 
-  function drawHero() {
+  const HERO_PX = 1024;
+  const heroCanvas = document.createElement('canvas');
+  heroCanvas.width = heroCanvas.height = HERO_PX;
+  const heroCtx = heroCanvas.getContext('2d');
+  const heroTex = keep(new THREE.CanvasTexture(heroCanvas));
+  const heroMesh = card(2);
+  heroMesh.material.map = heroTex;
+  // The letter, in the Hero's 200-unit box at the start pose
+  const unit = size0 / 200;
+  const letterLeft = (heroLetter.x - heroLetter.w / 2 - (heroStart.x - size0 / 2)) / unit;
+  const letterTop = (heroLetter.y - heroLetter.h / 2 - (heroStart.y - size0 / 2)) / unit;
+  const ink = heroLetter.ink;
+  const gl = letterLeft + ink.left / unit, gr = letterLeft + ink.right / unit;
+  const gt = letterTop + ink.top / unit, gb = letterTop + ink.bottom / unit;
+  const sw = (gr - gl) * 0.23; // an N's stroke is about a quarter of its width
+  // The letter as one N-shaped line: up the left stem, down the diagonal, up the right stem
+  const from = {
+    points: [[gl + sw / 2, gb], [gl + sw / 2, gt], [gr - sw / 2, gb], [gr - sw / 2, gt]],
+    width: sw, color: heroLetter.color,
+  };
+  let drawn = '';
+  function paintHero() {
+    const key = `${hero.morph.toFixed(3)} ${hero.grow.toFixed(3)}`;
+    if (key === drawn) return; // nothing changed: keep the texture
+    drawn = key;
+    heroCtx.setTransform(1, 0, 0, 1, 0, 0);
+    heroCtx.clearRect(0, 0, HERO_PX, HERO_PX);
+    heroCtx.scale(HERO_PX / 200, HERO_PX / 200);
+    // The real letter fades out as its N-shaped line takes over
+    const swap = clamp01(hero.morph / 0.25);
+    if (swap < 1) {
+      heroCtx.globalAlpha = 1 - swap;
+      heroCtx.drawImage(heroLetter.canvas, letterLeft, letterTop, heroLetter.w / unit, heroLetter.h / unit);
+    }
+    heroCtx.globalAlpha = swap;
+    if (swap > 0) drawHero(heroCtx, { from, morph: hero.morph, grow: hero.grow });
+    heroCtx.globalAlpha = 1;
+    heroTex.needsUpdate = true;
+  }
+  function showHero() {
+    paintHero();
     const p = hero.pose;
-    heroMesh.material.map = p.back ? heroTex : heroLetter.tex;
-    if (p.back) place(heroMesh, p.x, p.y, p.size * p.s, p.size * p.s, p.rz, p.ry);
-    else place(heroMesh, heroLetter.x, heroLetter.y, heroLetter.w * p.s, heroLetter.h * p.s, 0, p.ry);
-    grownMesh.visible = hero.grown > 0;
-    grownMesh.material.opacity = hero.grown;
-    place(grownMesh, p.x, p.y, p.size * p.s, p.size * p.s, p.rz, p.ry);
+    place(heroMesh, p.x, p.y, p.size, p.size, p.rz);
   }
 
   // ---------- Physics ----------
@@ -180,9 +218,8 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
   // ---------- Intro ----------
   function introFrame(t, dt) {
     setBurst(R * easeInOut(clamp01(t / P.burst)));
-    // The clicked letter turns into the Hero in place, right away
-    const hf = flipPose(t, P.morphDur);
-    hero.pose = { ...hero.pose, ry: hf.ry, s: hf.s, back: hf.back };
+    // The clicked letter morphs into the Hero in place, right away
+    hero.morph = easeInOut(clamp01((t - 100) / HERO_MORPH_MS));
     // Then flies to its spot, with a little overshoot and tilt
     const u = clamp01((t - tl.heroAt) / P.heroFly);
     const p = easeOut(clamp01(u / 0.6));
@@ -192,7 +229,8 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
       x: lerp(heroStart.x, heroEnd.x, p), y: lerp(heroStart.y, heroEnd.y, p),
       size: lerp(heroStart.size, heroEnd.size * big, p), rz: tilt * DEG,
     });
-    hero.grown = clamp01((t - (tl.arriveAt - 150)) / 400); // it grows into the rising arrow
+    // On landing, its tail grows up into the rising arrow
+    hero.grow = easeInOut(clamp01((t - (tl.arriveAt - 150)) / HERO_GROW_MS));
 
     if (!exploded && t >= tl.explodeAt) explode();
     const shrink = 1 - Math.exp(-dt / (P.shrink / 3));
@@ -222,15 +260,11 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
       } else Object.assign(pose, { ry: lerp(from.ry, 0, m), back: false });
       tk.pose = pose;
     });
+    // The Hero: the tail shrinks back, it flies home, then morphs back into the N
     const h = closeFrom.hero, m = easeInOut(clamp01((t - 300) / 600));
-    hero.grown = h.grown * (1 - clamp01(t / 200));
-    Object.assign(hero.pose, { x: lerp(h.x, heroStart.x, m), y: lerp(h.y, heroStart.y, m), size: lerp(h.size, heroStart.size, m), rz: lerp(h.rz, 0, m), s: 1 });
-    if (h.back) {
-      const u = t - 900;
-      if (u < 0) Object.assign(hero.pose, { ry: 0, back: true });
-      else if (u < 100) Object.assign(hero.pose, { ry: 90 * DEG * (u / 100), back: true });
-      else Object.assign(hero.pose, { ry: -90 * DEG * (1 - clamp01((u - 100) / 100)), back: false });
-    } else Object.assign(hero.pose, { ry: lerp(h.ry, 0, m), back: false });
+    hero.grow = h.grow * (1 - easeInOut(clamp01(t / 300)));
+    hero.pose = { x: lerp(h.x, heroStart.x, m), y: lerp(h.y, heroStart.y, m), size: lerp(h.size, heroStart.size, m), rz: lerp(h.rz, 0, m) };
+    hero.morph = h.morph * (1 - easeInOut(clamp01((t - 880) / 250)));
   }
 
   // ---------- Frame loop ----------
@@ -249,7 +283,7 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
       world.update(dt);
     }
     tokens.forEach(drawToken);
-    drawHero();
+    showHero();
     renderer.render(scene, camera);
     if (first) { first = false; onFirstFrame?.(); }
   }
@@ -266,7 +300,7 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
       if (closing) return closing.promise;
       closeFrom = {
         tokens: tokens.map((tk) => ({ ...tk.pose, rz: normAngle(tk.pose.rz), k: tk.k })),
-        hero: { ...hero.pose, grown: hero.grown },
+        hero: { ...hero.pose, morph: hero.morph, grow: hero.grow },
       };
       world.destroy();
       tokens.forEach((tk) => { tk.body = null; });
