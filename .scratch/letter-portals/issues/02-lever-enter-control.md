@@ -1,6 +1,6 @@
 # 02: Lever Enter control
 
-**What to build:** The Norte card gets its Enter control: an arcade lever (box, stick, ball, "Push to launch ↗"). Visitors drag it to the right (up or down both count), or simply tap it, to launch into VC Map; keyboard users trigger it with Enter or Space. After Antonio's first look, the lever became a big object of its own outside the card, and the "or just open it →" link was dropped: the lever is the only way in. Coming back from VC Map with Back lands in the Norte Reveal already open, with no replayed intro (including when the browser restores the page from its back/forward cache mid-launch).
+**What to build:** The Norte card gets its Enter control: an arcade lever (box, stick, ball, "Push to launch ↗"). Visitors drag it to the right (up or down both count), or simply tap it, to launch into VC Map; keyboard users trigger it with Enter or Space. After Antonio's first look, the lever became a big object sitting on top of the card (the card is its table), and the "or just open it →" link was dropped: the lever is the only way in. Coming back from VC Map with Back lands in the Norte Reveal already open, with no replayed intro (including when the browser restores the page from its back/forward cache mid-launch).
 
 Spec: `.scratch/letter-portals/spec.md`. Feel reference: the prototype's lever.
 
@@ -14,7 +14,7 @@ Spec: `.scratch/letter-portals/spec.md`. Feel reference: the prototype's lever.
 - [x] Back from VC Map shows the Norte Reveal in its open state, without the intro.
 - [x] Automated checks: keyboard activation navigates to VC Map; Back returns to an open Reveal (both a fresh load and a page restored from Chrome's back/forward cache).
 - [x] Manual Chrome checklist handed to Antonio (lever feel).
-- [x] Round 2 (Antonio's feedback): lever bigger and outside the card; plain link removed; a right-down drag opens it too.
+- [x] Round 2 (Antonio's feedback): lever bigger and sitting on top of the card; plain link removed; a right-down drag opens it too.
 
 Notes: the arrow shooting off-screen comes with the 3D Hero (tickets 04 and 07); for now the lever tips over and the page leaves after 0.3 s. A tap on the lever during the intro only skips the intro.
 
@@ -31,6 +31,6 @@ Tick each one when done. Run `node tests/serve.js` and open http://localhost:841
 
 Round 2 (bigger lever outside the card):
 
-- [ ] The lever feels like a main object: big, outside the card (under it on a wide window, between NORTE and the card on a narrow one).
+- [ ] The lever feels like a main object: big, sitting on top of the card like on a table, with its shadow falling to the right (wide and narrow window).
 - [ ] Dragging the ball right and down launches it; right and up still does too.
 - [ ] Without the "or just open it →" link, the card still reads well.

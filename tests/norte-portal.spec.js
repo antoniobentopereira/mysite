@@ -231,13 +231,14 @@ test.describe('the lever (Enter control)', () => {
   });
 
   for (const [size, viewport] of [['wide', { width: 1280, height: 800 }], ['narrow', { width: 390, height: 844 }]]) {
-    test(`on a ${size} screen the lever stands on its own, outside the card`, async ({ page }) => {
+    test(`on a ${size} screen the lever sits on top of the card, like on a table`, async ({ page }) => {
       await page.setViewportSize(viewport);
       await openNorte(page);
       const l = await lever(page).boundingBox();
       const card = await page.locator('.reveal-card').boundingBox();
-      const apart = l.x + l.width <= card.x || card.x + card.width <= l.x || l.y + l.height <= card.y || card.y + card.height <= l.y;
-      expect(apart).toBe(true);
+      expect(Math.abs(l.y + l.height - card.y)).toBeLessThanOrEqual(4); // its base rests on the card's top edge
+      expect(l.x).toBeGreaterThanOrEqual(card.x); // and stands within the card's width
+      expect(l.x + l.width).toBeLessThanOrEqual(card.x + card.width);
       expect(l.width).toBeGreaterThanOrEqual(180); // a main object, not a small button
       for (const box of [l, card]) expect(box.y + box.height).toBeLessThanOrEqual(viewport.height); // all on screen
     });

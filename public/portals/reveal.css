@@ -67,14 +67,24 @@
 }
 .reveal-card h2 { margin: 0.25em 0 0.35em; font-size: 1.7rem; line-height: 1; font-weight: 800; }
 .reveal-summary { margin: 0 0 0.8em; font-size: 0.95rem; line-height: 1.4; }
-/* The Enter control: a big arcade lever standing on its own next to the card.
+/* The Enter control: a big arcade lever sitting on top of the card, as if the
+   card were a table. Light comes from the top left (like the card's own shadow),
+   so the lever casts a hard shadow to the right that stops at the table top.
    Every size is a multiple of --lv, so the whole lever scales as one. */
 .lever-wrap {
   --lv: 1.7;
+  --cast: 8px; /* shadow length, same as the card's */
   grid-row: 2;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 400px; /* same as the card, so it lines up with it */
+  margin-bottom: -3px; /* the box's base overlaps the card's top border: it rests on it */
+  padding-inline: 1.1rem; /* lines up with the card's text */
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: calc(0.6rem * var(--lv));
+  position: relative;
+  z-index: 1;
 }
 .reveal-card { grid-row: 3; }
 
@@ -103,7 +113,7 @@
   border: calc(3px * var(--lv)) solid var(--k);
   border-radius: calc(8px * var(--lv));
   background: linear-gradient(var(--paper) 0 38%, var(--reveal-accent) 38%);
-  box-shadow: calc(5px * var(--lv)) calc(5px * var(--lv)) 0 var(--k);
+  box-shadow: var(--cast) 0 0 var(--k); /* straight to the right: the table stops it going down */
 }
 .lever-box::before, .lever-box::after {
   content: "";
@@ -129,6 +139,7 @@
   border-radius: calc(6px * var(--lv));
   transform-origin: 50% 100%;
   transform: rotate(var(--tilt, 0deg));
+  filter: drop-shadow(var(--cast) 0 0 var(--k)); /* stick and ball cast it too */
   transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); /* springy return */
 }
 .lever.dragging .lever-stick { transition: none; }
@@ -145,28 +156,31 @@
 }
 .lever-label {
   font-weight: 800;
-  font-size: calc(0.75rem * var(--lv));
+  font-size: 1rem;
   line-height: 1.15;
+  white-space: nowrap; /* always "Push to / launch ↗", two lines */
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--reveal-accent);
+  margin-bottom: 0.9rem; /* stands on the table, next to the lever */
 }
 @media (prefers-reduced-motion: reduce) {
   .lever-stick { transition: none; }
 }
 
-/* Phones: NORTE on top, the lever below it, the card at the bottom */
-.reveal { grid-template-rows: 1fr auto auto; }
+/* Phones: NORTE on top, the card at the bottom with the lever sitting on it */
+.reveal { grid-template-rows: 1fr auto auto; row-gap: 0; }
+.reveal-word { margin-bottom: 1rem; }
 
-/* Wide screens: NORTE on the left; the card and, under it, the lever on the right */
+/* Wide screens: NORTE on the left; on the right, the card with the lever on top */
 @media (min-width: 761px) {
   .reveal {
-    grid-template-rows: 1fr 1fr;
+    grid-template-rows: 1fr auto auto 1fr;
     grid-template-columns: 1fr 1fr;
-    row-gap: 2rem;
     padding: 2rem 4vw;
   }
-  .reveal-word { grid-row: 1 / -1; font-size: min(13vw, 30dvh); }
-  .reveal-card { grid-row: 1; align-self: end; justify-self: start; padding: 1.25rem 1.4rem; }
-  .lever-wrap { --lv: 2.1; grid-row: 2; align-self: start; justify-self: start; padding-top: 1rem; }
+  .reveal-word { grid-row: 1 / -1; margin: 0; font-size: min(13vw, 30dvh); }
+  .reveal-card { grid-row: 3; align-self: start; justify-self: start; padding: 1.25rem 1.4rem; }
+  .lever-wrap { --lv: 2.1; grid-row: 2; justify-self: start; padding-inline: 1.4rem; }
+  .lever-label { font-size: 1.2rem; }
 }
