@@ -185,8 +185,12 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
   const tokens = others.map((span, i) => {
     const letter = letterTexture(span);
     const k0 = (span.offsetHeight * 0.8) / S; // in place, a Token is about letter size
+    // Drawn as big as it is ever shown (Token size or letter size, in screen pixels), so it
+    // stays crisp; a little extra room for the flip's pop, within sensible texture limits
+    const shownPx = S * Math.max(1, k0) * renderer.getPixelRatio();
+    const stickerPx = Math.min(1024, Math.max(128, Math.ceil(shownPx * 1.25)));
     return {
-      span, mesh: card(1), letter, sticker: imageTexture(tokenList[i].src, 256), k0,
+      span, mesh: card(1), letter, sticker: imageTexture(tokenList[i].src, stickerPx), k0,
       home: { x: letter.x, y: letter.y }, rank: 0, body: null, k: k0,
       pose: { x: letter.x, y: letter.y, rz: 0, ry: 0, s: 1, back: false },
     };

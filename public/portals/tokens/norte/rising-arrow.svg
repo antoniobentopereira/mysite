@@ -1,2 +1,13 @@
-<!-- Stand-in Token (from the prototype). Final art: ticket 08. -->
-<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 100 100"><g stroke="#1d1a10" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"><path d="M12 84l26-30 16 14 32-38" fill="none" stroke-width="16"/><path d="M12 84l26-30 16 14 32-38" fill="none" stroke="#f2c200" stroke-width="9" stroke-linecap="butt" stroke-linejoin="miter"/><path d="M94 18l-4 26-22-18z" fill="#f2c200"/></g></svg>
+<!-- Norte Token: rising arrow. Sticker style: white die-cut edge, soft shadow, 3 px ink outline, Norte palette. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 100 100">
+<defs><g id="cut" stroke-linejoin="round" stroke-linecap="round"><path d="M17 80L38 56L53 68L77 40" fill="none" stroke-width="25"/><path d="M93 20L89 51L63 30Z" stroke-width="9"/></g></defs>
+<use href="#cut" transform="translate(1.5 2.5)" fill="#1d1a10" stroke="#1d1a10" opacity=".22"/>
+<use href="#cut" class="sticker-edge" fill="#fff" stroke="#fff"/>
+<g stroke-linejoin="round" stroke-linecap="round">
+<path d="M17 80L38 56L53 68L77 40" fill="none" stroke="#1d1a10" stroke-width="16"/>
+<path d="M17 80L38 56L53 68L77 40" fill="none" stroke="#f2c200" stroke-width="10"/>
+<path d="M18.5 76L37 55L52 64" fill="none" stroke="#fff6d8" stroke-width="2.5" opacity=".9"/>
+<path d="M93 20L89 51L63 30Z" fill="#f2c200" stroke="#1d1a10" stroke-width="3"/>
+<path d="M89 26L87 41L75 31" fill="none" stroke="#a87400" stroke-width="2.5"/>
+</g>
+</svg>

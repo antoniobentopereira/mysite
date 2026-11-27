@@ -7,7 +7,7 @@ _Last updated: 2026-11-27_
 ## Homepage
 - **v1:** typographic page (ANTONIO / BENTO, four corner texts).
 - **Letter portals (in progress):**
-  - First "N" in ANTONIO -> `vc-map/` ("Norte: a VC map"). **3D Reveal built** (ticket 04): burst, letters flip into stand-in stickers, explosion, Zero-g float, NORTE, card + lever; closing reassembles the title. Simple Reveal for reduced motion. Local-only tuning panel built (ticket 06: sliders, Replay, Save into the defaults, Reset, T to hide; never on the official site). **3D Hero built** (ticket 07): a solid 3D N built in code, its tail grows into the rising arrow, and it launches off-screen when the lever fires. Next: final stickers and 3D Tokens (08 to 11).
+  - First "N" in ANTONIO -> `vc-map/` ("Norte: a VC map"). **3D Reveal built** (ticket 04): burst, letters flip into stand-in stickers, explosion, Zero-g float, NORTE, card + lever; closing reassembles the title. Simple Reveal for reduced motion. Local-only tuning panel built (ticket 06: sliders, Replay, Save into the defaults, Reset, T to hide; never on the official site). **3D Hero built** (ticket 07): a solid 3D N built in code, its tail grows into the rising arrow, and it launches off-screen when the lever fires. **Final flat stickers** (ticket 08): 7 SVGs in one sticker style, drawn crisp at any size. Next: 3D Tokens (09 to 11).
   - "A" in ANTONIO -> About (later)
 - Automated checks: Playwright (dev only), `npm test`.
 - Libraries: Three.js (trimmed) and Matter.js copies in `public/portals/vendor/`, made by `npm run vendor`.
@@ -27,7 +27,7 @@ _Last updated: 2026-11-27_
     - [ ] About: Djavan (1978) cover, original art (official source)
     - [ ] About: Flamengo crest (official SVG)
     - [ ] About: Hermeto Pascoal bobblehead (later a real 3D model)
-    - [ ] Norte: folded map, compass (yellow), rising arrow, coin stack, rocket, term sheet, lightbulb, handshake, bar chart
-    - [ ] Norte: star mascot + São Paulo flag (Norte's own files / official SVG)
+    - [x] Norte flat stickers (ticket 08): folded map, rising arrow, São Paulo flag (to Lei 145/1948), term sheet, lightbulb, handshake, bar chart
+    - [ ] Norte 3D Tokens (tickets 09 to 11): compass (yellow), coin stack, rocket, star mascot (Norte's own files)
     - [ ] All files light (aim < 200 KB each), same outline style
 - About page (not started).

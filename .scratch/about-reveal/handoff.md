@@ -70,3 +70,8 @@ Read first: `GLOSSARY.md`, `docs/adr/`, `.scratch/letter-portals/` (Norte spec +
 - 2026-11-27: Norte Hero realism pass (clear-coat paint, studio reflections in the shared scene, seams, rivets).
 - 2026-11-27: Norte Hero spins once landed (tunable delay and speed); Hero hitbox removed.
 - 2026-11-27: Norte Hero: flat top-left corner, long arrow, Hero module exports BOX, lean back is a tuning value (heroTilt).
+
+## Built in Norte ticket 08 (reuse for About)
+
+- Flat Token stickers: one SVG per Token in `public/portals/tokens/<destination>/`, `viewBox="0 0 100 100"`, under 30 KB. Shared look: a white die-cut edge (`class="sticker-edge"`, the art's silhouette stroked 9 wide), a soft shadow (same silhouette, offset 1.5/2.5, 22 % ink), then the art with a 3 px `#1d1a10` outline. About's drawn Tokens can use the same recipe with About's colours; `tests/norte-tokens.spec.js` shows how to check them.
+- The scene draws each sticker as big as it is ever shown (Token or letter size, times screen density), so any SVG stays crisp.

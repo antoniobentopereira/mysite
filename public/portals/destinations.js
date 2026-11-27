@@ -16,8 +16,8 @@ export const DESTINATIONS = {
     shade: '#a87400',
     // Tokens, in title-letter order (T O N I O B E N T O, then one spare).
     // kind: 'sticker' (flat SVG card) or 'model' (3D, built in code).
-    // src: the sticker art. For now every Token uses the prototype's stand-in
-    // sticker (final stickers: ticket 08; 3D models: tickets 09 to 11).
+    // src: the sticker art, one SVG file per Token (swap a file to change its art).
+    // The 'model' Tokens still show their stand-in sticker until tickets 09 to 11.
     tokens: [
       { name: 'folded map', kind: 'sticker', src: art('tokens/norte/folded-map.svg') },
       { name: 'compass', kind: 'model', src: art('tokens/norte/compass.svg') },
