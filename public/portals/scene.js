@@ -368,6 +368,10 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
     finish() {
       t0 = Math.min(t0, performance.now() - tl.openAt);
     },
+    /** A tuning value changed: rebuild the hitboxes (drag and gravity are read live by the physics). */
+    retune() {
+      if (solid && !closing) makeSolid();
+    },
     /** Play the reassembly. Resolves when the title is whole again. */
     close() {
       if (closing) return closing.promise;

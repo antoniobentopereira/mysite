@@ -6,7 +6,6 @@
 import { getPhase } from './reveal.js';
 import { TIMINGS } from './choreography.js';
 
-const AVERAGE_MS = TIMINGS.zap * 1000; // average time between charges
 const FIRST_MS = 1200; // the first one comes soon after the pop-in
 const KINDS = ['hop', 'glow', 'wobble'];
 
@@ -31,7 +30,8 @@ function schedule(wait) {
   setTimeout(() => {
     const letters = [...document.querySelectorAll('.title .portal')];
     if (letters.length && getPhase() === 'rest' && !document.hidden && !reduced.matches) charge(pick(letters));
-    schedule(AVERAGE_MS * (0.5 + Math.random())); // 4.5 to 13.5 s, 9 s on average
+    // Half to one and a half times the average (TIMINGS.zap, read each time so tuning works live)
+    schedule(TIMINGS.zap * 1000 * (0.5 + Math.random()));
   }, wait);
 }
 

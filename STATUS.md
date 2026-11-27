@@ -7,7 +7,7 @@ _Last updated: 2026-11-27_
 ## Homepage
 - **v1:** typographic page (ANTONIO / BENTO, four corner texts).
 - **Letter portals (in progress):**
-  - First "N" in ANTONIO -> `vc-map/` ("Norte: a VC map"). **3D Reveal built** (ticket 04): burst, letters flip into stand-in stickers, explosion, Zero-g float, flat Hero, NORTE, card + lever; closing reassembles the title. Simple Reveal for reduced motion. Next: grab + hitboxes (05), tuning panel (06), 3D Hero and Tokens (07 to 11).
+  - First "N" in ANTONIO -> `vc-map/` ("Norte: a VC map"). **3D Reveal built** (ticket 04): burst, letters flip into stand-in stickers, explosion, Zero-g float, flat Hero, NORTE, card + lever; closing reassembles the title. Simple Reveal for reduced motion. Local-only tuning panel built (ticket 06: sliders, Replay, Copy values, Reset, T to hide; never on the official site). Next: 3D Hero and Tokens (07 to 11).
   - "A" in ANTONIO -> About (later)
 - Automated checks: Playwright (dev only), `npm test`.
 - Libraries: Three.js (trimmed) and Matter.js copies in `public/portals/vendor/`, made by `npm run vendor`.

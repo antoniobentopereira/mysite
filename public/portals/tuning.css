@@ -1,0 +1,19 @@
+/* Tuning panel (local only, see tuning.js). Floats above the Reveal. */
+.tune {
+  position: fixed; left: 0.6rem; bottom: 0.6rem; z-index: 50;
+  width: min(300px, calc(100vw - 1.2rem)); max-height: calc(100dvh - 4rem); overflow: auto;
+  background: var(--ink); color: #fff; border-radius: 12px;
+  font: 500 0.75rem/1.2 "Bricolage Grotesque", system-ui, sans-serif;
+  user-select: none;
+}
+.tune[hidden] { display: none; }
+.tune summary { cursor: pointer; padding: 0.55rem 0.8rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+.tune summary::after { content: "  · press T to hide"; font-weight: 500; text-transform: none; letter-spacing: 0; color: #b9b9a8; }
+.tune-body { padding: 0 0.8rem; display: grid; gap: 0.55rem; }
+.tune label { display: grid; grid-template-columns: 1fr auto; gap: 0.2rem 0.5rem; }
+.tune output { color: var(--yellow); font-variant-numeric: tabular-nums; }
+.tune small { grid-column: 1 / -1; color: #b9b9a8; font-size: 0.7rem; line-height: 1.3; }
+.tune input { grid-column: 1 / -1; width: 100%; accent-color: var(--yellow); }
+.tune-actions { display: flex; gap: 0.4rem; padding: 0.7rem 0.8rem 0.8rem; }
+.tune-actions button { font: inherit; flex: 1; padding: 0.45rem 0.3rem; border: 0; border-radius: 8px; background: #fff; color: var(--ink); cursor: pointer; }
+.tune-actions button[data-act="replay"] { background: var(--yellow); }

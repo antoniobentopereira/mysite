@@ -18,8 +18,10 @@ const MOUSE_EVENTS = ['mousemove', 'mousedown', 'mouseup', 'touchmove', 'touchst
 export function createWorld(Matter, P, { mode = 'zerog', element } = {}) {
   const { Engine, Bodies, Body, Composite, Mouse, MouseConstraint, Query, Vertices } = Matter;
   const engine = Engine.create();
-  engine.gravity.y = mode === 'toy' ? P.gravity : 0;
-  const airDrag = mode === 'zerog' ? P.drag / 1000 : 0.015;
+  // Gravity and drag are read every update, so the tuning panel changes them live
+  const gravity = () => (mode === 'toy' ? P.gravity : 0);
+  const airDrag = () => (mode === 'zerog' ? P.drag / 1000 : 0.015);
+  engine.gravity.y = gravity();
   const bodies = [];
   let walls = [], solids = [], W = innerWidth, H = innerHeight;
   let acc = 0;
@@ -86,7 +88,7 @@ export function createWorld(Matter, P, { mode = 'zerog', element } = {}) {
      */
     blast(x, y, size, from) {
       const b = Bodies.rectangle(x, y, size * 0.86, size * 0.86, {
-        chamfer: { radius: size * 0.3 }, restitution: 0.45, friction: 0.25, frictionAir: airDrag,
+        chamfer: { radius: size * 0.3 }, restitution: 0.45, friction: 0.25, frictionAir: airDrag(),
         collisionFilter: { category: TOKEN },
       });
       Composite.add(engine.world, b);
@@ -136,6 +138,9 @@ export function createWorld(Matter, P, { mode = 'zerog', element } = {}) {
     /** Advance by dt ms (in fixed steps). */
     update(dt) {
       acc += Math.min(dt, 100); // a long pause doesn't fast-forward
+      engine.gravity.y = gravity();
+      const drag = airDrag();
+      for (const b of bodies) b.frictionAir = drag;
       while (acc >= STEP) {
         if (mode === 'zerog') {
           for (const b of bodies) {

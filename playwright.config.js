@@ -11,6 +11,9 @@ export default defineConfig({
   use: {
     baseURL: `http://localhost:${PORT}/`,
     channel: 'chrome', // the Chrome already installed on this computer, no extra download
+    // A made-up "official" hostname that still reaches the test server, so tests can
+    // check what visitors see (e.g. no tuning panel). Nothing else is affected.
+    launchOptions: { args: ['--host-resolver-rules=MAP antoniobento.test 127.0.0.1'] },
   },
   webServer: {
     command: `node tests/serve.js ${PORT}`,

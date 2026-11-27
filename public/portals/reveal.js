@@ -37,6 +37,7 @@ let fallback = false; // using the simple Reveal
 let timers = [];
 let closing = null; // promise while closing
 let lever = null; // the open Reveal's Enter control
+let onClose = () => {}; // the open Reveal's close-button handler (kept for replay)
 
 publish();
 
@@ -62,6 +63,7 @@ export function open(name, { instant = false, onRequestClose = () => {} } = {}) 
   const dest = destinationFor(name);
   if (!dest || phase !== 'rest') return false;
   current = name;
+  onClose = onRequestClose;
   phase = 'intro';
   fallback = reduced.matches;
   stage = buildStage(name, dest, onRequestClose);
@@ -198,21 +200,42 @@ export function close() {
     ? Promise.race([scene.close(), new Promise((r) => setTimeout(r, CLOSE_MAX_MS))])
     : new Promise((r) => setTimeout(r, FADE_MS));
   closing = done.then(() => {
-    scene?.destroy();
-    scene = null;
-    root.classList.remove('reveal-live');
-    stage.remove();
-    stage = null;
-    lever = null;
-    current = null;
     closing = null;
-    fallback = false;
-    document.querySelector('main')?.removeAttribute('inert');
-    phase = 'rest';
-    publish();
+    teardown();
   });
   return closing;
 }
+
+// Remove the Reveal at once: back to rest
+function teardown() {
+  clearTimers();
+  scene?.destroy();
+  scene = null;
+  root.classList.remove('reveal-live');
+  stage.remove();
+  stage = null;
+  lever = null;
+  current = null;
+  fallback = false;
+  document.querySelector('main')?.removeAttribute('inert');
+  phase = 'rest';
+  publish();
+}
+
+/**
+ * Tuning panel only: play the open Reveal again from the start, with the
+ * current tuning values. False if no Reveal is showing.
+ */
+export function replay() {
+  if (phase !== 'intro' && phase !== 'open') return false;
+  const name = current;
+  teardown();
+  open(name, { onRequestClose: onClose });
+  return true;
+}
+
+/** Tuning panel only: a value that works live (e.g. hitbox tightness) changed. */
+export const retune = () => scene?.retune();
 
 // ---------- The HTML stage ----------
 function buildStage(name, dest, onRequestClose) {

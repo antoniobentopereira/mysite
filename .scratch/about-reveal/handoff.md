@@ -54,6 +54,10 @@ Read first: `GLOSSARY.md`, `docs/adr/`, `.scratch/letter-portals/` (Norte spec +
 - Choreography timings are shared (`public/portals/choreography.js`); the HTML stage has a `.reveal-hero` slot the scene flies the Hero to (wide: left; narrow: top).
 - Libraries are fetched by `public/portals/libs.js` after idle; Three.js is trimmed: anything new the About scene uses (e.g. lights, extra geometries) must be added to `THREE_PARTS` in `scripts/vendor.js` and re-vendored.
 
+## Built in Norte ticket 06 (reuse for About)
+
+- The tuning panel (`public/portals/tuning.js`, local only) tunes the shared `TIMINGS`, so About gets it for free. Its Replay replays whichever Reveal is open (at rest it opens the first portal link, Norte). If About needs its own values, add sliders to `SLIDERS` there.
+
 ## Change log
 
 - 2026-11-26: created from the Norte grilling session.
@@ -61,3 +65,4 @@ Read first: `GLOSSARY.md`, `docs/adr/`, `.scratch/letter-portals/` (Norte spec +
 - 2026-11-26: Norte ticket 02 built (lever Enter control); notes above.
 - 2026-11-26: Norte ticket 03 built (idle charge, hint line); notes above.
 - 2026-11-27: Norte ticket 04 built (3D scene and choreography); notes above.
+- 2026-11-27: Norte ticket 06 built (local-only tuning panel); notes above.

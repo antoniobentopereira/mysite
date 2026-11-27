@@ -6,6 +6,7 @@ import { isNewTabClick } from './links.js';
 import * as hint from './hint.js';
 import * as idle from './idle.js';
 import { preloadWhenIdle } from './libs.js';
+import { isLocal } from './local.js';
 
 // Was the Reveal opened from this page (so Back can close it)?
 // False when the visitor arrived straight on a #norte link.
@@ -70,6 +71,13 @@ document.addEventListener('keydown', (e) => {
 window.addEventListener('pageshow', (e) => {
   if (e.persisted) reveal.resume();
 });
+
+// On Antonio's computer only: the tuning panel. Waited for (everything above is
+// already wired), so his saved values are in place before a #norte link opens
+// the Reveal. Never on the official site.
+if (isLocal(location)) {
+  try { (await import('./tuning.js')).start(); } catch (e) { console.warn('Tuning panel failed to load', e); }
+}
 
 // A #norte link opens straight into the Reveal
 openFromHash({ instant: true });

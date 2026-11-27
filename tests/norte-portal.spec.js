@@ -523,10 +523,74 @@ test.describe('the hint line', () => {
     test('disappears without an animation', async ({ page }) => {
       await page.goto('./');
       await portalN(page).click();
+      await expect(revealState(page)).toHaveAttribute('data-reveal-destination', 'norte'); // opened (Esc before that does nothing)
       await page.keyboard.press('Escape');
       await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'rest');
       await expect(page.locator('.hint')).toHaveCSS('animation-name', 'none');
       await expect(hint(page)).toBeHidden();
+    });
+  });
+});
+
+test.describe('the tuning panel (Antonio only)', () => {
+  const panel = (page) => page.getByRole('group', { name: 'Tuning' });
+
+  test('is there when the site runs locally', async ({ page }) => {
+    await page.goto('./');
+    await expect(panel(page)).toBeVisible();
+  });
+
+  test('T hides and shows it, and the choice is remembered', async ({ page }) => {
+    await page.goto('./');
+    await expect(panel(page)).toBeVisible();
+    await page.keyboard.press('t');
+    await expect(panel(page)).toBeHidden();
+    await page.reload();
+    await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'rest');
+    await expect(page.locator('details.tune')).toHaveCount(1);
+    await expect(panel(page)).toBeHidden();
+    await page.keyboard.press('t');
+    await expect(panel(page)).toBeVisible();
+  });
+
+  test('a changed value is kept after a reload, and Reset brings back the default', async ({ page }) => {
+    await page.goto('./');
+    await panel(page).getByText('Tuning', { exact: true }).click(); // unfold it
+    const flip = panel(page).getByRole('slider', { name: 'Flip duration (ms)' });
+    await expect(flip).toHaveValue('300');
+    await flip.fill('600');
+    await page.reload();
+    await panel(page).getByText('Tuning', { exact: true }).click();
+    await expect(flip).toHaveValue('600');
+    await panel(page).getByRole('button', { name: 'Reset' }).click();
+    await page.waitForLoadState();
+    await panel(page).getByText('Tuning', { exact: true }).click();
+    await expect(flip).toHaveValue('300');
+  });
+
+  test('Replay plays the Norte Reveal from the start', async ({ page }) => {
+    await page.goto('./');
+    await panel(page).getByText('Tuning', { exact: true }).click();
+    await panel(page).getByRole('button', { name: 'Replay' }).click();
+    await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'intro');
+    await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'open');
+    await panel(page).getByRole('button', { name: 'Replay' }).click();
+    await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'intro');
+    await expect(page.locator('canvas')).toHaveCount(1);
+    await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'open');
+    await page.keyboard.press('Escape'); // still closes as normal
+    await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'rest');
+    await expect(page).not.toHaveURL(/#norte/);
+  });
+
+  test.describe('on the official site', () => {
+    test('never appears', async ({ page, baseURL }) => {
+      // Chrome sends this made-up hostname to the test server (playwright.config.js)
+      await page.goto(baseURL.replace('localhost', 'antoniobento.test'));
+      await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'rest'); // the page's scripts ran
+      await page.keyboard.press('t');
+      await expect(panel(page)).toHaveCount(0);
+      await expect(page.locator('link[href*="tuning"]')).toHaveCount(0);
     });
   });
 });
