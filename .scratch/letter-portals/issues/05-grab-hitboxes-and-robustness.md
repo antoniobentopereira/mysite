@@ -6,7 +6,7 @@ Spec: `.scratch/letter-portals/spec.md`.
 
 **Blocked by:** 04
 
-**Status:** ready-for-human
+**Status:** done
 
 - [x] Tokens can be grabbed and flung; the card, lever and ✕ stay clickable (grabs don't steal their clicks).
 - [x] Tokens bounce off the Hero, word and card with tight hitboxes and never end up on top of the card or Enter control.
@@ -31,9 +31,9 @@ Tick each one when done. Run `node tests/serve.js` and open http://localhost:841
 - [x] Grab a sticker with the mouse and fling it: it follows your hand a little softly, then flies off and bounces. Feels good?
 - [x] The hand cursor shows over a sticker, and a closed hand while holding one.
 - [x] Flung stickers bounce off the arrow's real shape (also its bottom stem and the head), each NORTE letter, the lever's red ball, stick and box, and the card. They tuck slightly behind the card's edges only. No invisible walls around the arrow.
-- [ ] Right after the explosion, when the hitboxes switch on, no sticker stays stuck behind the card or the lever.
-- [ ] Grab a sticker floating right next to the lever: it grabs. Only the red ball moves the lever, even with a sticker beside it.
-- [ ] Drag around the Reveal and double-click the card: no text gets selected.
+- [x] Right after the explosion, when the hitboxes switch on, no sticker stays stuck behind the card or the lever.
+- [x] Grab a sticker floating right next to the lever: it grabs. Only the red ball moves the lever, even with a sticker beside it.
+- [x] Drag around the Reveal and double-click the card: no text gets selected.
 - [x] ✕, the lever and the card still work right after flinging stickers around.
 - [x] With the Reveal open, resize the window from wide to narrow and back: the arrow, NORTE and card move to their new places and no sticker is lost. Close: ANTONIO BENTO is whole, in the right place.
 - [x] DevTools > toggle device toolbar (phone): drag a sticker with the "finger", and tap ✕ to close.
