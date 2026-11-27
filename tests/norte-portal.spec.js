@@ -46,7 +46,6 @@ test.describe('opening the Norte Reveal', () => {
     await expect(dialog).toBeVisible();
     await expect(dialog.getByText('NORTE', { exact: true })).toBeVisible();
     await expect(dialog.getByRole('heading', { name: 'Norte: a VC map' })).toBeVisible();
-    await expect(dialog.getByRole('link', { name: /or just open it/ })).toHaveAttribute('href', 'vc-map/');
   });
 
   test('the hidden link opens it from the keyboard, and focus moves into the Reveal', async ({ page }) => {
@@ -214,24 +213,39 @@ test.describe('the lever (Enter control)', () => {
     await page.mouse.up();
   };
 
-  test('dragging the lever forward past its threshold launches into VC Map', async ({ page }) => {
-    await openNorte(page);
-    await drag(page, 70, -70);
-    await expect(page).toHaveURL(/\/vc-map\/$/);
-  });
+  for (const [way, dy] of [['up and right', -100], ['down and right', 100]]) {
+    test(`dragging the lever ${way} past its threshold launches into VC Map`, async ({ page }) => {
+      await openNorte(page);
+      await drag(page, 100, dy);
+      await expect(page).toHaveURL(/\/vc-map\/$/);
+    });
+  }
 
   test('letting go of the lever early springs it back and stays on the Reveal', async ({ page }) => {
     await openNorte(page);
-    await drag(page, 20, -20);
+    await drag(page, 20, 20);
     await expect(lever(page)).toHaveCSS('--tilt', '0deg');
     await page.waitForTimeout(600); // longer than a launch would take
     await expect(page).toHaveURL(/#norte$/);
     await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'open');
   });
 
-  test('the card keeps its plain "or just open it" link', async ({ page }) => {
+  for (const [size, viewport] of [['wide', { width: 1280, height: 800 }], ['narrow', { width: 390, height: 844 }]]) {
+    test(`on a ${size} screen the lever stands on its own, outside the card`, async ({ page }) => {
+      await page.setViewportSize(viewport);
+      await openNorte(page);
+      const l = await lever(page).boundingBox();
+      const card = await page.locator('.reveal-card').boundingBox();
+      const apart = l.x + l.width <= card.x || card.x + card.width <= l.x || l.y + l.height <= card.y || card.y + card.height <= l.y;
+      expect(apart).toBe(true);
+      expect(l.width).toBeGreaterThanOrEqual(180); // a main object, not a small button
+      for (const box of [l, card]) expect(box.y + box.height).toBeLessThanOrEqual(viewport.height); // all on screen
+    });
+  }
+
+  test('the lever is the only way in: no plain link on the card', async ({ page }) => {
     await openNorte(page);
-    await expect(page.getByRole('dialog').getByRole('link', { name: /or just open it/ })).toHaveAttribute('href', 'vc-map/');
+    await expect(page.getByRole('dialog').getByRole('link')).toHaveCount(0);
   });
 });
 

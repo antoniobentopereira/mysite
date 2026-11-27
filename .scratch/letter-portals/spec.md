@@ -60,7 +60,7 @@ The first "N" of ANTONIO becomes a **Portal letter** to the **Destination** Nort
 37. As a visitor, I want to push the arcade lever (drag it forward, or just tap it) to launch, so that entering feels playful.
 38. As a visitor, I want the arrow to shoot off-screen when the lever fires and then land me on VC Map, so that the transition feels like launching.
 39. As a keyboard user, I want the lever to be a real button I can trigger with Enter or Space, so that I can enter without dragging.
-40. As a visitor who prefers plain links, I want a small "or just open it →" link on the card, so that I have a no-fuss way in.
+40. ~~As a visitor who prefers plain links, I want a small "or just open it →" link on the card.~~ Dropped by Antonio (2026-11-26): the lever is the only way in; it is a real button, so keyboard and screen reader users still get in.
 41. As a mobile visitor, I want the card at the bottom of the screen and the Hero above it, so that everything fits a small screen.
 42. As a desktop visitor, I want the Hero on one side and the card on the other, so that the layout uses the space well.
 
@@ -104,7 +104,7 @@ The first "N" of ANTONIO becomes a **Portal letter** to the **Destination** Nort
   - **Physics (Matter.js)**: 2D only (position + spin). Bodies created at the explosion. Zero-g default; Toy box supported via the same module, hidden from visitors. Static hitboxes for Hero, word and card added once the Hero arrives, shrunk by the hitbox-tightness value. Mouse/touch grab via Matter's mouse constraint on the stage. Paused when the tab is hidden.
   - **Tokens**: letter cards are flat planes textured with the letter rendered in the homepage font and colour; each flips (rotate around Y) into its Token in place, keeping letter size, then shrinks to Token size during the explosion. Sticker Tokens are thin card planes textured from SVG files. 3D Tokens (star mascot, coin stack, compass, rocket) are built in code from simple shapes; a glTF file is only used if clearly better. 3D Tokens add a slow independent tumble; when grabbed they ease to face the camera.
   - **Hero (Norte)**: the N outline extruded into a solid 3D N built in code; after fly-in its last stroke extends into the rising arrow with arrowhead (from the prototype's path: N stem → valley → tail ending in a head pointing up-right).
-  - **Card + Enter control**: HTML over the canvas. Lever: drag forward or tap to fire; keyboard-operable button; "or just open it →" plain link. Firing launches the arrow off-screen, then navigates to VC Map.
+  - **Card + Enter control**: HTML over the canvas. The lever is a big object of its own, outside the card (under it on wide screens, between the word and the card on phones). Drag it to the right (up or down both count) or tap to fire; keyboard-operable button; no plain link. Firing launches the arrow off-screen, then navigates to VC Map.
   - **Idle charge**: CSS animations (hop, glow, wobble) triggered at random intervals by a small script; only on Portal letters; off for reduced motion.
   - **Hint line**: new small line under the bottom-left text; after the first portal opens, a pop-away animation removes it and a localStorage flag keeps it hidden.
   - **Tuning panel**: only created when the hostname is local (localhost, 127.0.0.1, a private LAN address, or a file URL). Same sliders as the prototype, plus descriptions; T toggles; values persist in localStorage only locally.

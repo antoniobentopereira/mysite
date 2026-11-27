@@ -13,7 +13,6 @@
 // It stays as the fallback for reduced motion and devices without WebGL once the
 // 3D Reveal arrives (ticket 04).
 import { destinationFor } from './destinations.js';
-import { isNewTabClick } from './links.js';
 import { buildLever, wireLever } from './lever.js';
 
 const FADE_MS = 220; // keep in sync with the transition in reveal.css
@@ -80,7 +79,7 @@ function finishIntro() {
 }
 
 /** The visitor is entering the Destination. */
-export function leave() {
+function leave() {
   if (phase !== 'open') return;
   phase = 'leaving';
   publish();
@@ -146,24 +145,17 @@ function buildSimpleStage(name, dest, onRequestClose) {
       <p class="reveal-kicker"></p>
       <h2></h2>
       <p class="reveal-summary"></p>
-      <div class="reveal-foot">
-        <a class="reveal-plain">or just open it →</a>
-      </div>
     </section>`;
-  const foot = el.querySelector('.reveal-foot');
+  // The Enter control is its own big object next to the card, not inside it
   if (dest.enter?.kind === 'lever') {
     const control = buildLever(dest.enter.label);
-    foot.prepend(control);
+    el.append(control);
     lever = wireLever(control.querySelector('.lever'), launch);
   }
   el.querySelector('.reveal-word').textContent = dest.word;
   el.querySelector('.reveal-kicker').textContent = dest.card.kicker;
   el.querySelector('h2').textContent = dest.card.title;
   el.querySelector('.reveal-summary').textContent = dest.card.summary;
-  const plain = el.querySelector('.reveal-plain');
-  plain.href = dest.url;
-  // A new-tab click doesn't leave this page, so the Reveal stays open
-  plain.addEventListener('click', (e) => { if (!isNewTabClick(e)) leave(); });
 
   el.querySelector('.reveal-close').addEventListener('click', onRequestClose);
   // A click or tap during the intro only skips to the end (it doesn't also

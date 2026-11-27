@@ -1,9 +1,10 @@
 // The arcade lever: the Norte Enter control (feel ported from the prototype).
-// Drag the ball forward (up / right) past the threshold, or just tap it, to fire.
+// Drag the ball to the right (up or down, both count) past the threshold, or just
+// tap it, to fire.
 // Releasing a drag early springs it back. It is a real <button>, so Enter and
 // Space fire it too.
 
-const THROW_PX = 90; // drag distance for a full push
+const THROW = 0.7; // drag distance for a full push, as a share of the lever's width
 const TAP_PX = 6; // moving less than this counts as a tap
 const MAX_TILT = 45; // degrees
 
@@ -38,7 +39,9 @@ export function wireLever(lever, onFire) {
     if (!active) return;
     const dx = e.clientX - startX, dy = e.clientY - startY;
     moved = Math.max(moved, Math.hypot(dx, dy));
-    const amount = Math.min(Math.max((dx - dy) / THROW_PX, 0), 1); // forward = right or up
+    // Forward = to the right; going up or down on the way helps either way
+    const pushed = dx > 0 ? dx + Math.abs(dy) : 0;
+    const amount = Math.min(pushed / (lever.offsetWidth * THROW), 1);
     tilt(amount);
     if (amount >= 1) fire();
   });
