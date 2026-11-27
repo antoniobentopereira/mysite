@@ -184,3 +184,33 @@
   .lever-wrap { --lv: 2.1; grid-row: 2; justify-self: start; padding-inline: 1.4rem; }
   .lever-label { font-size: 1.2rem; }
 }
+
+/* ---------- The 3D Reveal ----------
+   The Three.js canvas sits under the stage; the stage itself is see-through so the
+   scene (burst, Tokens, Hero) shows, and the card, word and lever appear on cue. */
+.reveal-hero { display: none; } /* only the 3D Reveal has a Hero (drawn by the scene) */
+.reveal-canvas { position: fixed; inset: 0; z-index: 10; pointer-events: none; }
+.reveal-live .title { visibility: hidden; } /* the scene draws the title while it is up */
+
+.reveal.is-3d { background: transparent; opacity: 1; transition: none; }
+.reveal.is-3d.has-backdrop { background: var(--reveal-bg); } /* open before the scene is drawing */
+.reveal.is-3d .reveal-hero { display: block; grid-row: 1; align-self: stretch; justify-self: center; aspect-ratio: 1; max-height: min(34dvh, 66vw); max-width: 100%; }
+.reveal.is-3d { grid-template-rows: minmax(0, 1fr) auto auto auto; }
+.reveal.is-3d .reveal-word { grid-row: 2; font-size: min(16vw, 10dvh); margin-block: 0.4rem 1rem; }
+.reveal.is-3d .lever-wrap { grid-row: 3; }
+.reveal.is-3d .reveal-card { grid-row: 4; }
+
+/* NORTE spells out, then the card and lever appear */
+.reveal.is-3d .w { display: inline-block; opacity: 0; transform: translateY(0.35em) scale(0.4); transition: opacity 0.3s, transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1); transition-delay: calc(var(--j) * 70ms); }
+.reveal.is-3d.is-word .w { opacity: 1; transform: none; }
+.reveal.is-3d .reveal-card, .reveal.is-3d .lever-wrap { opacity: 0; transform: translateY(16px); transition: opacity 0.35s, transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.reveal.is-3d.is-open .reveal-card, .reveal.is-3d.is-open .lever-wrap { opacity: 1; transform: none; }
+
+/* Wide screens: the Hero with NORTE under it on the left, the card on the right */
+@media (min-width: 761px) {
+  .reveal.is-3d { grid-template-rows: 1fr auto auto 1fr; }
+  .reveal.is-3d .reveal-hero { grid-row: 1 / 4; grid-column: 1; align-self: end; height: min(36vw, 52dvh); max-height: none; }
+  .reveal.is-3d .reveal-word { grid-row: 4; grid-column: 1; align-self: start; font-size: min(9vw, 16dvh); margin: 0.5rem 0 0; }
+  .reveal.is-3d .lever-wrap { grid-row: 2; grid-column: 2; }
+  .reveal.is-3d .reveal-card { grid-row: 3; grid-column: 2; }
+}

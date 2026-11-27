@@ -1,6 +1,9 @@
 // Destinations: one settings block per Portal letter.
 // Adding a portal = adding a block here (plus its letter markup in index.html).
 
+// Art files live next to this module (relative paths, so the site works under a subpath)
+const art = (path) => new URL(path, import.meta.url).href;
+
 export const DESTINATIONS = {
   norte: {
     // Portal letter: position in the title (0 = first A of ANTONIO, 1 = first N)
@@ -13,29 +16,31 @@ export const DESTINATIONS = {
     shade: '#a87400',
     // Tokens, in title-letter order (T O N I O B E N T O, then one spare).
     // kind: 'sticker' (flat SVG card) or 'model' (3D, built in code).
-    // Art files and models arrive in later tickets (08 to 11).
+    // src: the sticker art. For now every Token uses the prototype's stand-in
+    // sticker (final stickers: ticket 08; 3D models: tickets 09 to 11).
     tokens: [
-      { name: 'folded map', kind: 'sticker' },
-      { name: 'compass', kind: 'model' },
-      { name: 'star mascot', kind: 'model' },
-      { name: 'rising arrow', kind: 'sticker' },
-      { name: 'coin stack', kind: 'model' },
-      { name: 'rocket', kind: 'model' },
-      { name: 'São Paulo flag', kind: 'sticker' },
-      { name: 'term sheet', kind: 'sticker' },
-      { name: 'lightbulb', kind: 'sticker' },
-      { name: 'handshake', kind: 'sticker' },
-      { name: 'bar chart', kind: 'sticker' },
+      { name: 'folded map', kind: 'sticker', src: art('tokens/norte/folded-map.svg') },
+      { name: 'compass', kind: 'model', src: art('tokens/norte/compass.svg') },
+      { name: 'star mascot', kind: 'model', src: art('tokens/norte/star-mascot.svg') },
+      { name: 'rising arrow', kind: 'sticker', src: art('tokens/norte/rising-arrow.svg') },
+      { name: 'coin stack', kind: 'model', src: art('tokens/norte/coin-stack.svg') },
+      { name: 'rocket', kind: 'model', src: art('tokens/norte/rocket.svg') },
+      { name: 'São Paulo flag', kind: 'sticker', src: art('tokens/norte/sao-paulo-flag.svg') },
+      { name: 'term sheet', kind: 'sticker', src: art('tokens/norte/term-sheet.svg') },
+      { name: 'lightbulb', kind: 'sticker', src: art('tokens/norte/lightbulb.svg') },
+      { name: 'handshake', kind: 'sticker', src: art('tokens/norte/handshake.svg') },
+      { name: 'bar chart', kind: 'sticker', src: art('tokens/norte/bar-chart.svg') },
     ],
-    // Hero: the 3D N that grows into a rising arrow (ticket 07). None yet.
-    hero: null,
+    // Hero: for now a flat picture (the N, then grown into the rising arrow).
+    // The real 3D N comes in ticket 07.
+    hero: { letter: art('heroes/norte-n.svg'), grown: art('heroes/norte-arrow.svg') },
     // Card shown over the Reveal
     card: {
       kicker: 'Portal · N',
       title: 'Norte: a VC map',
       summary: 'Norte means north. This map shows where it points: the startups it backs, and what they have in common.',
     },
-    // Enter control: the arcade lever (lever.js). The card also keeps a plain link.
+    // Enter control: the arcade lever (lever.js), the only way in.
     enter: { kind: 'lever', label: 'Enter Norte: a VC map' },
     // Destination link: relative, no leading slash
     url: 'vc-map/',

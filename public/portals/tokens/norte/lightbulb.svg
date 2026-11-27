@@ -1,0 +1,2 @@
+<!-- Stand-in Token (from the prototype). Final art: ticket 08. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 100 100"><g stroke="#1d1a10" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"><path d="M50 8a28 28 0 0 1 16 51v9H34v-9A28 28 0 0 1 50 8z" fill="#f2c200"/><rect x="34" y="68" width="32" height="10" rx="3" fill="#c9ccc0"/><rect x="38" y="78" width="24" height="10" rx="4" fill="#9a9c92"/><path d="M42 50l4-10 4 8 4-8 4 10" fill="none" stroke-width="3"/></g></svg>

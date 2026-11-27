@@ -2,14 +2,15 @@
 
 High-level state of antoniobento.me. Details of each project live in its own repo or folder, not here.
 
-_Last updated: 2026-11-26_
+_Last updated: 2026-11-27_
 
 ## Homepage
 - **v1:** typographic page (ANTONIO / BENTO, four corner texts).
 - **Letter portals (in progress):**
-  - First "N" in ANTONIO -> `vc-map/` ("Norte: a VC map"). **Live as a simple Reveal** (brown screen, NORTE, card with link). 3D, Tokens and lever come in later tickets.
+  - First "N" in ANTONIO -> `vc-map/` ("Norte: a VC map"). **3D Reveal built** (ticket 04): burst, letters flip into stand-in stickers, explosion, Zero-g float, flat Hero, NORTE, card + lever; closing reassembles the title. Simple Reveal for reduced motion. Next: grab + hitboxes (05), tuning panel (06), 3D Hero and Tokens (07 to 11).
   - "A" in ANTONIO -> About (later)
 - Automated checks: Playwright (dev only), `npm test`.
+- Libraries: Three.js (trimmed) and Matter.js copies in `public/portals/vendor/`, made by `npm run vendor`.
 
 ## Projects
 

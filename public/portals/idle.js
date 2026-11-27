@@ -4,8 +4,9 @@
 // by setting data-charge on the letter for the length of the animation.
 // Only at rest, only while the tab is visible, never with reduced motion.
 import { getPhase } from './reveal.js';
+import { TIMINGS } from './choreography.js';
 
-const AVERAGE_MS = 9000; // average time between charges
+const AVERAGE_MS = TIMINGS.zap * 1000; // average time between charges
 const FIRST_MS = 1200; // the first one comes soon after the pop-in
 const KINDS = ['hop', 'glow', 'wobble'];
 

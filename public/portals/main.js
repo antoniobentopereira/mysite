@@ -5,6 +5,7 @@ import * as reveal from './reveal.js';
 import { isNewTabClick } from './links.js';
 import * as hint from './hint.js';
 import * as idle from './idle.js';
+import { preloadWhenIdle } from './libs.js';
 
 // Was the Reveal opened from this page (so Back can close it)?
 // False when the visitor arrived straight on a #norte link.
@@ -73,3 +74,5 @@ window.addEventListener('pageshow', (e) => {
 // A #norte link opens straight into the Reveal
 openFromHash({ instant: true });
 idle.start();
+// The 3D Reveal's libraries arrive quietly once the page is idle (never for reduced motion)
+if (!matchMedia('(prefers-reduced-motion: reduce)').matches) preloadWhenIdle();

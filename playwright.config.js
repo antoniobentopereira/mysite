@@ -7,6 +7,7 @@ const PORT = 8418;
 
 export default defineConfig({
   testDir: 'tests',
+  expect: { timeout: 10_000 }, // the full Reveal intro takes about 5 s
   use: {
     baseURL: `http://localhost:${PORT}/`,
     channel: 'chrome', // the Chrome already installed on this computer, no extra download

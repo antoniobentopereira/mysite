@@ -47,9 +47,17 @@ Read first: `GLOSSARY.md`, `docs/adr/`, `.scratch/letter-portals/` (Norte spec +
 - Idle charge: `public/portals/idle.js` charges any `.title .portal` letter, so the A gets it for free once it is a Portal letter. Its charge colour is `--charge` on the letter (Norte: blue); About needs its own rule in `style.css`.
 - Hint line: one shared hint for all portals; opening any portal (About too) dismisses it for good.
 
+## Built in Norte ticket 04 (reuse for About)
+
+- One scene for any Destination: `public/portals/scene.js` reads the Destination block (`color`, `letterIndex`, `tokens[].src`, `hero`). About = new block + its own art; no scene changes needed for flat Tokens.
+- The Hero is still a flat picture (`hero: { letter, grown }`, two SVGs: before and after it "grows"). The About book will need the Hero to become pluggable code (ticket 07 does this for the 3D N).
+- Choreography timings are shared (`public/portals/choreography.js`); the HTML stage has a `.reveal-hero` slot the scene flies the Hero to (wide: left; narrow: top).
+- Libraries are fetched by `public/portals/libs.js` after idle; Three.js is trimmed: anything new the About scene uses (e.g. lights, extra geometries) must be added to `THREE_PARTS` in `scripts/vendor.js` and re-vendored.
+
 ## Change log
 
 - 2026-11-26: created from the Norte grilling session.
 - 2026-11-26: Norte ticket 01 built; added the reusable pattern above.
 - 2026-11-26: Norte ticket 02 built (lever Enter control); notes above.
 - 2026-11-26: Norte ticket 03 built (idle charge, hint line); notes above.
+- 2026-11-27: Norte ticket 04 built (3D scene and choreography); notes above.

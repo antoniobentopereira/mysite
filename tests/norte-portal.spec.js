@@ -34,18 +34,47 @@ test.describe('without JavaScript', () => {
 });
 
 test.describe('opening the Norte Reveal', () => {
-  test('clicking N opens the simple Reveal and sets #norte', async ({ page }) => {
+  test('clicking N plays the 3D Reveal (intro, then open) and sets #norte', async ({ page }) => {
     await page.goto('./');
     await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'rest');
     await portalN(page).click();
     await expect(page).toHaveURL(/#norte$/);
     await expect(revealState(page)).toHaveAttribute('data-reveal-destination', 'norte');
-    await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'open');
-    await expect(revealState(page)).toHaveAttribute('data-reveal-fallback', 'true');
+    await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'intro');
+    await expect(revealState(page)).toHaveAttribute('data-reveal-fallback', 'false');
+    await expect(page.locator('canvas')).toHaveCount(1);
+    await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'open', { timeout: 10_000 });
     const dialog = page.getByRole('dialog', { name: 'Norte: a VC map' });
     await expect(dialog).toBeVisible();
     await expect(dialog.getByText('NORTE', { exact: true })).toBeVisible();
     await expect(dialog.getByRole('heading', { name: 'Norte: a VC map' })).toBeVisible();
+  });
+
+  test('the 3D and physics libraries are our own copies, fetched only after the page has loaded', async ({ page }) => {
+    const seen = [];
+    let loadedYet = false;
+    page.on('load', () => { loadedYet = true; });
+    page.on('request', (r) => seen.push({ url: r.url(), loaded: loadedYet }));
+    await page.goto('./');
+    await portalN(page).click();
+    await expect(page.locator('canvas')).toHaveCount(1);
+    const scripts = seen.filter((r) => /\.m?js(\?|$)/.test(r.url));
+    expect(scripts.every((r) => r.url.startsWith(new URL('./', page.url()).origin))).toBe(true); // no CDN
+    const libs = seen.filter((r) => r.url.includes('/portals/vendor/'));
+    expect(libs.map((r) => r.url.split('/').pop()).sort()).toEqual(['matter.min.js', 'three.min.js']);
+    expect(libs.every((r) => r.loaded)).toBe(true); // the Rest state's first load downloads nothing new
+  });
+
+  test('closing the 3D Reveal reassembles ANTONIO BENTO and removes the canvas', async ({ page }) => {
+    await page.goto('./');
+    await portalN(page).click();
+    await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'open', { timeout: 10_000 });
+    await page.keyboard.press('Escape');
+    await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'closing');
+    await expect(page.locator('canvas')).toHaveCount(1); // the reassembly plays in the scene
+    await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'rest');
+    await expect(page.locator('canvas')).toHaveCount(0);
+    await expect(page.locator('.title')).toBeVisible();
   });
 
   test('the hidden link opens it from the keyboard, and focus moves into the Reveal', async ({ page }) => {
@@ -72,6 +101,7 @@ test.describe('opening the Norte Reveal', () => {
     await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'intro');
     await page.mouse.click(10, 300);
     await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'open', { timeout: 50 });
+    await expect(page.getByRole('heading', { name: 'Norte: a VC map' })).toBeVisible();
   });
 
   test('loading #norte opens the Reveal directly, and closing stays on the homepage', async ({ page }) => {
@@ -93,6 +123,16 @@ test.describe('reduced motion', () => {
     await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'open');
     await expect(revealState(page)).toHaveAttribute('data-reveal-fallback', 'true');
     await expect(page.locator('canvas')).toHaveCount(0);
+  });
+
+  test('never downloads the 3D or physics libraries', async ({ page }) => {
+    const libs = [];
+    page.on('request', (r) => { if (r.url().includes('/portals/vendor/')) libs.push(r.url()); });
+    await page.goto('./');
+    await page.waitForTimeout(2500); // past the idle preload
+    await portalN(page).click();
+    await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'open');
+    expect(libs).toEqual([]);
   });
 });
 
@@ -287,7 +327,7 @@ test.describe('idle charge', () => {
   test('no charges while a Reveal is open', async ({ page }) => {
     await watchCharges(page);
     await portalN(page).click();
-    await page.clock.runFor(1_000); // the intro
+    await page.mouse.click(10, 300); // skip the intro
     await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'open');
     await page.evaluate(() => { window.charged = []; });
     await page.clock.runFor(30_000);
