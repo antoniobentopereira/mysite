@@ -28,8 +28,8 @@ export const DESTINATIONS = {
       { name: 'São Paulo flag', kind: 'sticker', src: art('tokens/norte/sao-paulo-flag.svg') },
       { name: 'term sheet', kind: 'sticker', src: art('tokens/norte/term-sheet.svg') },
       { name: 'lightbulb', kind: 'sticker', src: art('tokens/norte/lightbulb.svg') },
-      { name: 'handshake', kind: 'sticker', src: art('tokens/norte/handshake.svg') },
-      { name: 'bar chart', kind: 'sticker', src: art('tokens/norte/bar-chart.svg') },
+      { name: 'unicorn', kind: 'sticker', src: art('tokens/norte/unicorn.svg') },
+      { name: 'founders graph', kind: 'sticker', src: art('tokens/norte/founders-graph.svg') },
     ],
     // Hero: a solid 3D N built in code whose last stroke grows into the rising
     // arrow (loaded with the 3D libraries). It is drawn in the accent colour.

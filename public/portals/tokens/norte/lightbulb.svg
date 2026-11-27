@@ -3,7 +3,7 @@
 <defs>
 <path id="bulb" d="M50 14C35 14 25 25 25 39C25 49 31 55 36 61C38 64 39 67 39 70H61C61 67 62 64 64 61C69 55 75 49 75 39C75 25 65 14 50 14Z"/>
 <path id="rays" d="M50 4V9M25.3 14.3L28.8 17.8M74.7 14.3L71.2 17.8M15 39H20M85 39H80"/>
-<g id="cut" stroke-linejoin="round" stroke-linecap="round"><use href="#bulb" stroke-width="9"/><rect x="38" y="68" width="24" height="22" rx="4" stroke-width="9"/><use href="#rays" fill="none" stroke-width="13"/></g>
+<g id="cut" stroke-linejoin="round" stroke-linecap="round"><use href="#bulb" stroke-width="9"/><path d="M38 70H62V83H56L53 89H47L44 83H38Z" stroke-width="5"/><use href="#rays" fill="none" stroke-width="13"/></g>
 </defs>
 <use href="#cut" transform="translate(1.5 2.5)" fill="#1d1a10" stroke="#1d1a10" opacity=".22"/>
 <use href="#cut" class="sticker-edge" fill="#fff" stroke="#fff"/>

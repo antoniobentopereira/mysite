@@ -44,7 +44,7 @@ The first "N" of ANTONIO becomes a **Portal letter** to the **Destination** Nort
 25. As a visitor, I want the whole intro to take a few seconds (tuned values: burst 1.2 s, chain starts after 0.8 s, 0.1 s stagger, 0.3 s flips, 0.65 s hold, 1.2 s Hero fly-in), so that it's readable but not slow.
 
 ### Tokens and Zero-g
-26. As a visitor, I want 11 Norte Tokens (folded map, compass, star mascot, rising arrow, coin stack, rocket, São Paulo flag, term sheet, lightbulb, handshake, bar chart), so that the scene is full of Norte-related objects.
+26. As a visitor, I want 11 Norte Tokens (folded map, compass, star mascot, rising arrow, coin stack, rocket, São Paulo flag, term sheet, lightbulb, unicorn, founders graph), so that the scene is full of Norte-related objects.
 27. As a visitor, I want the star mascot, coin stack, compass and rocket to be real 3D objects with soft realistic lighting, so that they feel tactile and contrast playfully with the flat stickers.
 28. As a visitor, I want the other 7 Tokens to be clean, flat, drawn stickers in a consistent Norte style, so that the set looks crafted and cohesive.
 29. As a visitor, I want the Tokens to float slowly in zero gravity after the explosion, bouncing softly off the screen edges and each other, so that the scene stays alive.

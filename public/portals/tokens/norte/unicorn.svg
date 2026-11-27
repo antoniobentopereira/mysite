@@ -1,0 +1,26 @@
+<!-- Norte Token: unicorn (a startup worth a billion). Sticker style: white die-cut edge, soft shadow, 3 px ink outline, Norte palette. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 100 100">
+<defs>
+<path id="head" d="M30 92C28 76 30 62 36 52C40 44 46 38 52 36L58 34C64 34 70 38 76 46L84 56C88 61 86 67 80 67C76 67 72 65 68 63C64 62 60 64 58 68C56 74 58 84 60 92Z"/>
+<path id="horn" d="M50 39L72 6L65 35Z"/>
+<path id="ear" d="M43 41L38 26L49 36Z"/>
+<path id="mane" d="M52 36C42 33 33 39 31 47C25 51 23 59 27 65C21 71 23 81 29 85L34 91C32 76 34 62 40 52C44 44 48 40 53 37Z"/>
+<path id="spark" d="M85 9L87 18L95 20L87 22L85 31L83 22L75 20L83 18Z"/>
+<g id="cut" stroke-width="9" stroke-linejoin="round"><use href="#head"/><use href="#horn"/><use href="#ear"/><use href="#mane"/><use href="#spark"/></g>
+</defs>
+<use href="#cut" transform="translate(1.5 2.5)" fill="#1d1a10" stroke="#1d1a10" opacity=".22"/>
+<use href="#cut" class="sticker-edge" fill="#fff" stroke="#fff"/>
+<g stroke="#1d1a10" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+<use href="#head" fill="#f6efff"/>
+<use href="#ear" fill="#f6efff"/>
+<path d="M43.5 37L41.5 31L46.5 35.5" fill="#b79ae6" stroke="none"/>
+<use href="#mane" fill="#b79ae6"/>
+<path d="M44 40C37 44 34 52 33 60M38 64C32 70 31 78 32 84" fill="none" stroke="#8e2a9c" stroke-width="2.5"/>
+<use href="#horn" fill="#f2c200"/>
+<path d="M55 32L65 29M59 25L67 22M64 18L69 15" fill="none" stroke="#a87400" stroke-width="2"/>
+<path d="M61 47Q65 50 69 47" fill="none" stroke-width="2.5"/>
+<circle cx="72" cy="56" r="3" fill="#f2a7c3" stroke="none"/>
+<circle cx="81" cy="60" r="1.2" fill="#1d1a10" stroke="none"/>
+<use href="#spark" fill="#f2c200" stroke-width="2"/>
+</g>
+</svg>

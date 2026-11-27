@@ -27,7 +27,7 @@ _Last updated: 2026-11-27_
     - [ ] About: Djavan (1978) cover, original art (official source)
     - [ ] About: Flamengo crest (official SVG)
     - [ ] About: Hermeto Pascoal bobblehead (later a real 3D model)
-    - [x] Norte flat stickers (ticket 08): folded map, rising arrow, São Paulo flag (to Lei 145/1948), term sheet, lightbulb, handshake, bar chart
+    - [x] Norte flat stickers (ticket 08): folded map, rising arrow, São Paulo flag, term sheet ("TERM SHEET"), lightbulb, unicorn, founders graph
     - [ ] Norte 3D Tokens (tickets 09 to 11): compass (yellow), coin stack, rocket, star mascot (Norte's own files)
     - [ ] All files light (aim < 200 KB each), same outline style
 - About page (not started).

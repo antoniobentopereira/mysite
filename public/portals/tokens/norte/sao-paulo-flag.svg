@@ -1,6 +1,4 @@
-<!-- Norte Token: São Paulo flag. Built to Lei 145/1948 (1 module = 1/13 of the height):
-     13 bands of 1 module, red canton 7.5 x 5, white circle 4 wide, blue Brazil inscribed in a 3.5 circle,
-     four yellow stars, each inscribed in a 1.5 circle whose centre is 1 module from the canton edges. -->
+<!-- Norte Token: São Paulo flag. Sticker style: white die-cut edge, soft shadow, 3 px ink outline. -->
 <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 100 100">
 <defs><g id="cut" stroke-width="9" stroke-linejoin="round"><rect x="12" y="24" width="80" height="53.33"/><rect x="5" y="12" width="4" height="80"/></g></defs>
 <use href="#cut" transform="translate(1.5 2.5)" fill="#1d1a10" stroke="#1d1a10" opacity=".22"/>
@@ -8,28 +6,28 @@
 <rect x="5" y="16" width="4" height="76" rx="1" fill="#a87400" stroke="#1d1a10" stroke-width="2"/>
 <circle cx="7" cy="15" r="3.2" fill="#f2c200" stroke="#1d1a10" stroke-width="2"/>
 <g>
-<rect data-part="stripe" x="12" y="24" width="80" height="4.1026" fill="#000"/>
-<rect data-part="stripe" x="12" y="28.1026" width="80" height="4.1026" fill="#fff"/>
-<rect data-part="stripe" x="12" y="32.2051" width="80" height="4.1026" fill="#000"/>
-<rect data-part="stripe" x="12" y="36.3077" width="80" height="4.1026" fill="#fff"/>
-<rect data-part="stripe" x="12" y="40.4103" width="80" height="4.1026" fill="#000"/>
-<rect data-part="stripe" x="12" y="44.5128" width="80" height="4.1026" fill="#fff"/>
-<rect data-part="stripe" x="12" y="48.6154" width="80" height="4.1026" fill="#000"/>
-<rect data-part="stripe" x="12" y="52.7179" width="80" height="4.1026" fill="#fff"/>
-<rect data-part="stripe" x="12" y="56.8205" width="80" height="4.1026" fill="#000"/>
-<rect data-part="stripe" x="12" y="60.9231" width="80" height="4.1026" fill="#fff"/>
-<rect data-part="stripe" x="12" y="65.0256" width="80" height="4.1026" fill="#000"/>
-<rect data-part="stripe" x="12" y="69.1282" width="80" height="4.1026" fill="#fff"/>
-<rect data-part="stripe" x="12" y="73.2308" width="80" height="4.1026" fill="#000"/>
+<rect x="12" y="24" width="80" height="4.1026" fill="#000"/>
+<rect x="12" y="28.1026" width="80" height="4.1026" fill="#fff"/>
+<rect x="12" y="32.2051" width="80" height="4.1026" fill="#000"/>
+<rect x="12" y="36.3077" width="80" height="4.1026" fill="#fff"/>
+<rect x="12" y="40.4103" width="80" height="4.1026" fill="#000"/>
+<rect x="12" y="44.5128" width="80" height="4.1026" fill="#fff"/>
+<rect x="12" y="48.6154" width="80" height="4.1026" fill="#000"/>
+<rect x="12" y="52.7179" width="80" height="4.1026" fill="#fff"/>
+<rect x="12" y="56.8205" width="80" height="4.1026" fill="#000"/>
+<rect x="12" y="60.9231" width="80" height="4.1026" fill="#fff"/>
+<rect x="12" y="65.0256" width="80" height="4.1026" fill="#000"/>
+<rect x="12" y="69.1282" width="80" height="4.1026" fill="#fff"/>
+<rect x="12" y="73.2308" width="80" height="4.1026" fill="#000"/>
 </g>
-<rect data-part="canton" x="12" y="24" width="30.7692" height="20.5128" fill="#d6232c"/>
-<circle data-part="circle" cx="27.385" cy="34.256" r="8.205" fill="#fff"/>
-<path data-part="map" fill="#123f8c" d="M25.16 27.76L25.50 28.00L26.67 28.83L27.50 28.76L28.34 28.10L28.84 28.90L29.00 29.50L29.50 29.83L30.67 30.33L31.84 30.47L32.84 30.73L33.78 31.27L33.91 32.00L33.68 32.67L33.01 33.51L32.51 34.17L32.51 35.34L32.01 36.34L31.51 37.18L30.51 37.44L29.50 38.01L29.30 39.01L28.67 39.85L27.70 40.75L27.67 40.18L27.00 39.68L26.33 39.51L27.50 38.51L27.30 38.05L27.43 37.51L27.00 37.01L26.23 36.84L26.17 36.18L26.33 35.51L25.50 34.84L25.33 34.11L24.66 33.84L23.73 33.17L23.33 32.77L21.99 33.17L21.33 32.84L20.86 32.00L21.33 31.17L22.16 30.90L22.33 29.830L22.16 29.33L23.16 28.83L24.16 29.00L24.16 28.16Z"/>
+<rect x="12" y="24" width="30.7692" height="20.5128" fill="#d6232c"/>
+<circle cx="27.385" cy="34.256" r="8.205" fill="#fff"/>
+<path fill="#123f8c" d="M25.16 27.76L25.50 28.00L26.67 28.83L27.50 28.76L28.34 28.10L28.84 28.90L29.00 29.50L29.50 29.83L30.67 30.33L31.84 30.47L32.84 30.73L33.78 31.27L33.91 32.00L33.68 32.67L33.01 33.51L32.51 34.17L32.51 35.34L32.01 36.34L31.51 37.18L30.51 37.44L29.50 38.01L29.30 39.01L28.67 39.85L27.70 40.75L27.67 40.18L27.00 39.68L26.33 39.51L27.50 38.51L27.30 38.05L27.43 37.51L27.00 37.01L26.23 36.84L26.17 36.18L26.33 35.51L25.50 34.84L25.33 34.11L24.66 33.84L23.73 33.17L23.33 32.77L21.99 33.17L21.33 32.84L20.86 32.00L21.33 31.17L22.16 30.90L22.33 29.830L22.16 29.33L23.16 28.83L24.16 29.00L24.16 28.16Z"/>
 <g fill="#f2c200">
-<path data-part="star" d="M16.10 25.03L16.79 27.15L19.03 27.15L17.22 28.47L17.91 30.59L16.10 29.28L14.29 30.59L14.99 28.47L13.18 27.15L15.41 27.15Z"/>
-<path data-part="star" d="M38.67 25.03L39.36 27.15L41.59 27.15L39.78 28.47L40.48 30.59L38.67 29.28L36.86 30.59L37.55 28.47L35.74 27.15L37.98 27.15Z"/>
-<path data-part="star" d="M16.10 37.33L16.79 39.46L19.03 39.46L17.22 40.77L17.91 42.90L16.10 41.59L14.29 42.90L14.99 40.77L13.18 39.46L15.41 39.46Z"/>
-<path data-part="star" d="M38.67 37.33L39.36 39.46L41.59 39.46L39.78 40.77L40.48 42.90L38.67 41.59L36.86 42.90L37.55 40.77L35.74 39.46L37.98 39.46Z"/>
+<path d="M16.10 25.03L16.79 27.15L19.03 27.15L17.22 28.47L17.91 30.59L16.10 29.28L14.29 30.59L14.99 28.47L13.18 27.15L15.41 27.15Z"/>
+<path d="M38.67 25.03L39.36 27.15L41.59 27.15L39.78 28.47L40.48 30.59L38.67 29.28L36.86 30.59L37.55 28.47L35.74 27.15L37.98 27.15Z"/>
+<path d="M16.10 37.33L16.79 39.46L19.03 39.46L17.22 40.77L17.91 42.90L16.10 41.59L14.29 42.90L14.99 40.77L13.18 39.46L15.41 39.46Z"/>
+<path d="M38.67 37.33L39.36 39.46L41.59 39.46L39.78 40.77L40.48 42.90L38.67 41.59L36.86 42.90L37.55 40.77L35.74 39.46L37.98 39.46Z"/>
 </g>
 <rect x="12" y="24" width="80" height="53.33" fill="none" stroke="#1d1a10" stroke-width="3" stroke-linejoin="round"/>
 </svg>
