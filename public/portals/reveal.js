@@ -20,7 +20,7 @@ import { TIMINGS, timeline, CLOSE_MS } from './choreography.js';
 import { loadLibs } from './libs.js';
 
 const FADE_MS = 220; // keep in sync with the transition in reveal.css
-const LAUNCH_MS = 300; // the lever's push is seen before the page goes to the Destination
+const LAUNCH_MS = 300; // simple Reveal: the lever's push is seen before the page goes to the Destination
 const CLOSE_MAX_MS = CLOSE_MS + 450; // never wait longer than this for the scene's reassembly
 const SLOW_LOAD_MS = 800; // libraries not here by then (first visit, slow network): simple Reveal
 // Gravity mode: 'zerog' (Tokens float) or 'toy' (Toy box: they fall and pile up).
@@ -87,8 +87,8 @@ export function open(name, { instant = false, onRequestClose = () => {} } = {}) 
     // The scene draws the letters in the homepage font, so it waits for it too
     loadLibs().then(async (libs) => {
       await document.fonts.ready;
-      const { default: drawHero, outline: heroOutline } = await import(dest.hero.src); // the Hero's own code
-      return { ...libs, drawHero, heroOutline };
+      const hero = await import(dest.hero.src); // the Hero's own code
+      return { ...libs, hero };
     })
       .then(ifStill((libs) => startScene(libs, dest)), ifStill(useFallback));
   }
@@ -120,8 +120,8 @@ function createSceneFor(libs, dest, letters) {
     letters,
     heroIndex: dest.letterIndex,
     tokens: dest.tokens,
-    drawHero: libs.drawHero,
-    heroOutline: libs.heroOutline,
+    hero: libs.hero,
+    heroColor: dest.accent,
     stage,
     P: TIMINGS,
     mode: GRAVITY_MODE,
@@ -174,7 +174,9 @@ function launch() {
   if (phase !== 'open') { lever?.reset(); return; }
   const url = destinationFor(current).url;
   leave();
-  later(() => location.assign(url), LAUNCH_MS);
+  // 3D: the Hero shoots off-screen along its arrow first
+  scene?.launch();
+  later(() => location.assign(url), scene ? scene.launchMs : LAUNCH_MS);
 }
 
 /** The page came back from the Destination (browser Back): show the Reveal again, no intro. */
@@ -182,6 +184,7 @@ export function resume() {
   if (phase !== 'leaving') return;
   clearTimers(); // restored mid-launch: don't leave again
   lever?.reset();
+  scene?.land();
   phase = 'open';
   publish();
 }

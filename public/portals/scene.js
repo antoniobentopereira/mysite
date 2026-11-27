@@ -10,6 +10,8 @@ import { createWorld } from './physics.js';
 
 const FOV = 30; // degrees; small, so flips and tilts get a gentle perspective
 const HERO_GROW_MS = 650; // the Hero's tail growing into the rising arrow
+const HERO_TURN_START = 0.5; // in the letter's spot the Hero is turned half its own tilt
+const LAUNCH_MS = 650; // the launch: the Hero shoots off-screen along its arrow
 const DEG = Math.PI / 180;
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -40,20 +42,23 @@ function flipPose(u, dur) {
  *   libs: { THREE, Matter }
  *   letters: the title's letter spans, in order; heroIndex: the Portal letter
  *   tokens: [{ name, src }] for the other letters, in title order
- *   drawHero(ctx, { grow }): draws the flat Hero in a 200 x 200 box
- *     (see heroes/norte-flat.js); the 3D Hero replaces it in ticket 07
- *   heroOutline(): the grown Hero's shape in that box, for its hitbox (optional)
+ *   hero: the Hero's module ({ createHero, letterBounds, TILT, ARROW_DIR }, see
+ *     heroes/norte-3d.js); its objects are built in a 200 x 200 box
+ *   heroColor: its colour
  *   stage: the Reveal's HTML layer (over the canvas): Tokens are grabbed on it,
- *     and its Hero slot, word, card and lever become solid once the Hero lands
+ *     its Hero slot is where the Hero lands, and the Hero, word, card and lever
+ *     become solid once it has
  *   atEnd: skip the intro (direct #norte links, Back from the Destination)
  *   onFirstFrame: called once the scene covers the title (time to hide it)
- * Returns { canvas, finish(), close() -> Promise, destroy() }, or null without WebGL.
+ * Returns { canvas, launchMs, finish(), launch(), land(), close() -> Promise, destroy() },
+ * or null without WebGL.
  *
  * Resizing the window (or rotating a phone) re-lays everything out to the new
  * screen. While the tab is hidden the scene and its physics are paused.
  */
-export function createScene(libs, { color, letters, heroIndex, tokens: tokenList, drawHero, heroOutline, stage, P, mode, atEnd, onFirstFrame }) {
+export function createScene(libs, { color, letters, heroIndex, tokens: tokenList, hero: heroModule, heroColor, stage, P, mode, atEnd, onFirstFrame }) {
   const { THREE, Matter } = libs;
+  const { createHero, letterBounds, TILT: HERO_TILT, ARROW_DIR } = heroModule;
   const heroSlot = stage.querySelector('.reveal-hero');
   let W = innerWidth, H = innerHeight;
   const S = Math.max(54, Math.min(112, Math.min(W, H) * 0.14)); // Token size, px
@@ -162,40 +167,84 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
     else place(t.mesh, p.x, p.y, t.letter.w * p.s, t.letter.h * p.s, p.rz, p.ry);
   }
 
-  // ---------- Hero (temporary flat art; the 3D Hero comes in ticket 07) ----------
-  // The clicked letter flips (like the other letters) into a clean N drawn on a
-  // square canvas, which is redrawn while its tail grows. In the letter's spot it is
-  // scaled so the Hero's N matches the letter.
+  // ---------- Hero: the clicked letter becomes a solid 3D object ----------
+  // The letter flips (like the other letters) and the 3D Hero turns in on its back
+  // side. In the letter's spot it is sized so the Hero's N matches the letter;
+  // while it flies to its spot it turns a little more, so its depth shows.
+  // Soft, realistic light: a key light from the top left, and a warm fill that
+  // picks up the burst's colour from below.
+  const key = new THREE.DirectionalLight(0xffffff, 2.4);
+  key.position.set(-0.8, 1, 1.4);
+  scene.add(key, new THREE.HemisphereLight(0xfff4dc, new THREE.Color(color), 1.4));
   let heroLetter = letterTexture(heroSpan);
-  const heroStartFor = (l) => { const size = heroSpan.offsetHeight / 0.6; return { x: l.x + 0.15 * size, y: l.y - 0.075 * size, size, rz: 0 }; };
+  // In the letter's spot, the Hero's N covers the letter's ink: same height, same left edge
+  const fit = letterBounds();
+  const heroStartFor = (l) => {
+    const top = l.y - l.h / 2 + l.ink.top, bottom = l.y - l.h / 2 + l.ink.bottom, left = l.x - l.w / 2 + l.ink.left;
+    const size = ((bottom - top) / (fit.bottom - fit.top)) * 200, k = size / 200;
+    return { x: left + (100 - fit.left) * k, y: top + (100 - fit.top) * k, size, rz: 0 };
+  };
   const heroEndNow = () => { const slot = heroSlot.getBoundingClientRect(); return { ...centre(slot), size: Math.min(slot.width, slot.height), rz: 0 }; };
   let heroStart = heroStartFor(heroLetter), heroEnd = heroEndNow();
-  const hero = { pose: { ...heroStart, ry: 0, s: 1, back: false }, grow: 0 };
-
-  const HERO_PX = 1024;
-  const heroCanvas = document.createElement('canvas');
-  heroCanvas.width = heroCanvas.height = HERO_PX;
-  const heroCtx = heroCanvas.getContext('2d');
-  const heroTex = keep(new THREE.CanvasTexture(heroCanvas));
-  const heroMesh = card(2), heroLetterMesh = card(2);
-  heroMesh.material.map = heroTex;
+  const hero = { pose: { ...heroStart, ry: 0, s: 1, back: false, turn: HERO_TURN_START }, grow: 0 };
+  const hero3d = createHero(THREE, { color: heroColor });
+  const heroObj = hero3d.object, heroTilt = new THREE.Group();
+  heroObj.rotation.set(HERO_TILT.x, HERO_TILT.y, 0, 'YXZ');
+  heroTilt.add(heroObj);
+  heroTilt.rotation.order = 'ZYX'; // like the cards: spin in the screen plane, flip on its upright axis
+  scene.add(heroTilt);
+  const heroLetterMesh = card(2);
   heroLetterMesh.material.map = heroLetter.tex;
-  let drawn = -1;
-  function paintHero() {
-    if (hero.grow === drawn) return; // nothing changed: keep the texture
-    drawn = hero.grow;
-    heroCtx.setTransform(1, 0, 0, 1, 0, 0);
-    heroCtx.clearRect(0, 0, HERO_PX, HERO_PX);
-    heroCtx.scale(HERO_PX / 200, HERO_PX / 200);
-    drawHero(heroCtx, { grow: hero.grow });
-    heroTex.needsUpdate = true;
+
+  // The launch (the lever fired): a little pull back, then off-screen along the arrow
+  let launchAt = 0, launchDir = ARROW_DIR;
+  function launchOffset(now) {
+    if (!launchAt) return { dx: 0, dy: 0, s: 1 };
+    const u = clamp01((now - launchAt) / LAUNCH_MS);
+    const back = u < 0.25 ? Math.sin((u / 0.25) * Math.PI / 2) : 1 - clamp01((u - 0.25) / 0.15);
+    const go = u < 0.25 ? 0 : ((u - 0.25) / 0.75) ** 2.2;
+    const far = Math.hypot(W, H) * 1.3, d = -0.12 * heroEnd.size * back + far * go;
+    return { dx: launchDir.x * d, dy: launchDir.y * d, s: 1 - 0.06 * back + 0.25 * go };
   }
-  function showHero() {
+  // Which way the arrow points on screen as it is drawn now (turned in 3D)
+  function arrowOnScreen() {
+    heroTilt.updateMatrixWorld(true);
+    camera.updateMatrixWorld();
+    const toScreen = (x, y) => { const p = new THREE.Vector3(x, y, 0).applyMatrix4(heroObj.matrixWorld).project(camera); return { x: p.x * W, y: -p.y * H }; };
+    const a = toScreen(0, 0), b = toScreen(ARROW_DIR.x * 100, -ARROW_DIR.y * 100); // group units: y up
+    const l = Math.hypot(b.x - a.x, b.y - a.y);
+    return l > 0 ? { x: (b.x - a.x) / l, y: (b.y - a.y) / l } : ARROW_DIR;
+  }
+  // Pose the Hero group for screen point (x, y), box size `size`, spin rz, flip ry,
+  // `turn` (0..1) of its own tilt
+  function poseHero(x, y, size, rz, ry, turn) {
+    heroTilt.position.set(x - W / 2, H / 2 - y, 0);
+    heroTilt.scale.setScalar(Math.max(size, 0.01) / 200);
+    heroTilt.rotation.set(0, ry, -rz);
+    heroObj.rotation.x = HERO_TILT.x * turn;
+    heroObj.rotation.y = HERO_TILT.y * turn;
+  }
+  function showHero(now) {
     const p = hero.pose;
-    heroMesh.visible = p.back;
+    heroTilt.visible = p.back;
     heroLetterMesh.visible = !p.back;
-    if (p.back) { paintHero(); place(heroMesh, p.x, p.y, p.size * p.s, p.size * p.s, p.rz, p.ry); }
-    else place(heroLetterMesh, heroLetter.x, heroLetter.y, heroLetter.w * p.s, heroLetter.h * p.s, 0, p.ry);
+    if (p.back) {
+      hero3d.setGrow(hero.grow);
+      const l = launchOffset(now);
+      poseHero(p.x + l.dx, p.y + l.dy, p.size * p.s * l.s, p.rz, p.ry, p.turn);
+    } else place(heroLetterMesh, heroLetter.x, heroLetter.y, heroLetter.w * p.s, heroLetter.h * p.s, 0, p.ry);
+  }
+  // The landed Hero's outline on screen: its 3D pieces as they are drawn there
+  function heroShapes() {
+    poseHero(heroEnd.x, heroEnd.y, heroEnd.size, 0, 0, 1);
+    heroTilt.updateMatrixWorld(true);
+    camera.updateMatrixWorld(); // it may not have drawn yet (first frame) or just moved (resize)
+    return hero3d.pieces().map((piece) => ({
+      points: piece.map((v) => {
+        const p = v.clone().applyMatrix4(heroObj.matrixWorld).project(camera);
+        return { x: (p.x + 1) / 2 * W, y: (1 - p.y) / 2 * H };
+      }),
+    }));
   }
 
   // ---------- Physics ----------
@@ -210,7 +259,7 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
   }
   // Once the Hero has landed, it, the word, the lever and the card are solid,
   // each with a hitbox shaped like what you see:
-  //   Hero   its real outline (strokes, head, extruded edge), from the Hero's code
+  //   Hero   its real 3D shape (strokes, head), as it is drawn on screen
   //   word   one box per letter
   //   lever  its box, stick and round ball (as it stands upright), and its label
   //   card   its rounded box, shrunk by the hitbox tightness (P.solidInset): the
@@ -218,10 +267,7 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
   const radiusOf = (el) => parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0;
   function makeSolid() {
     solid = true;
-    const shapes = [];
-    const k = heroEnd.size / 200, hx = heroEnd.x - heroEnd.size / 2, hy = heroEnd.y - heroEnd.size / 2;
-    if (heroOutline) for (const piece of heroOutline()) shapes.push({ points: piece.map(([u, v]) => ({ x: hx + u * k, y: hy + v * k })) });
-    else shapes.push(layoutBox(heroSlot));
+    const shapes = heroShapes();
     stage.querySelectorAll('.reveal-word .w').forEach((el) => shapes.push(layoutBox(el)));
     const part = (sel) => stage.querySelector(sel);
     const inset = P.solidInset;
@@ -258,6 +304,7 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
     Object.assign(hero.pose, {
       x: lerp(heroStart.x, heroEnd.x, p), y: lerp(heroStart.y, heroEnd.y, p),
       size: lerp(heroStart.size, heroEnd.size * big, p), rz: tilt * DEG,
+      turn: lerp(HERO_TURN_START, 1, p),
     });
     // On landing, its tail grows up into the rising arrow
     hero.grow = easeInOut(clamp01((t - (tl.arriveAt - 150)) / HERO_GROW_MS));
@@ -294,7 +341,7 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
     // The Hero: the tail shrinks back, it flies home, then flips back into the N
     const h = closeFrom.hero, m = easeInOut(clamp01((t - 300) / 600));
     hero.grow = h.grow * (1 - easeInOut(clamp01(t / 300)));
-    hero.pose = { x: lerp(h.x, heroStart.x, m), y: lerp(h.y, heroStart.y, m), size: lerp(h.size, heroStart.size, m), rz: lerp(h.rz, 0, m), s: 1 };
+    hero.pose = { x: lerp(h.x, heroStart.x, m), y: lerp(h.y, heroStart.y, m), size: lerp(h.size, heroStart.size, m), rz: lerp(h.rz, 0, m), s: 1, turn: lerp(h.turn, HERO_TURN_START, m) };
     if (h.back) {
       const u = t - 900;
       if (u < 100) Object.assign(hero.pose, { ry: 90 * DEG * clamp01(u / 100), back: true });
@@ -356,7 +403,7 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
       world.update(dt);
     }
     tokens.forEach(drawToken);
-    showHero();
+    showHero(now);
     renderer.render(scene, camera);
     if (first) { first = false; onFirstFrame?.(); }
   }
@@ -364,6 +411,7 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
 
   return {
     canvas,
+    launchMs: LAUNCH_MS,
     /** Skip to the end of the intro (the Tokens still blast out from their letters). */
     finish() {
       t0 = Math.min(t0, performance.now() - tl.openAt);
@@ -372,12 +420,25 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
     retune() {
       if (solid && !closing) makeSolid();
     },
+    /** The Enter control fired: the Hero shoots off-screen along its arrow (LAUNCH_MS). */
+    launch() {
+      if (launchAt || closing) return;
+      launchDir = arrowOnScreen();
+      launchAt = performance.now();
+    },
+    /** Back from the Destination: the Hero is in its spot again. */
+    land() {
+      launchAt = 0;
+    },
     /** Play the reassembly. Resolves when the title is whole again. */
     close() {
       if (closing) return closing.promise;
+      // Closed mid-launch: the Hero comes home from where it is, not from its spot
+      const p = hero.pose, l = launchOffset(performance.now());
+      launchAt = 0;
       closeFrom = {
         tokens: tokens.map((tk) => ({ ...tk.pose, rz: normAngle(tk.pose.rz), k: tk.k })),
-        hero: { ...hero.pose, grow: hero.grow },
+        hero: { ...p, x: p.x + l.dx, y: p.y + l.dy, size: p.size * l.s, grow: hero.grow },
       };
       world.destroy();
       tokens.forEach((tk) => { tk.body = null; });
@@ -393,6 +454,7 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
       removeEventListener('resize', onResize);
       document.removeEventListener('visibilitychange', onVisibility);
       world.destroy();
+      hero3d.dispose();
       textures.forEach((t) => t.dispose());
       scene.traverse((o) => { o.geometry?.dispose(); o.material?.dispose(); });
       renderer.dispose();

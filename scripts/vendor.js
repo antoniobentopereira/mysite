@@ -13,6 +13,8 @@ const OUT = resolve(ROOT, 'public', 'portals', 'vendor');
 const THREE_PARTS = [
   'WebGLRenderer', 'Scene', 'PerspectiveCamera', 'Group', 'Mesh',
   'PlaneGeometry', 'CircleGeometry', 'MeshBasicMaterial', 'CanvasTexture', 'SRGBColorSpace', 'Color',
+  // The 3D Hero (and later the 3D Tokens): solid shapes with soft, realistic light
+  'Shape', 'ExtrudeGeometry', 'MeshStandardMaterial', 'HemisphereLight', 'DirectionalLight', 'Vector2', 'Vector3',
 ];
 
 await mkdir(OUT, { recursive: true });

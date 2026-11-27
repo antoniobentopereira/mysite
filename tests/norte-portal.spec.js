@@ -45,6 +45,9 @@ test.describe('opening the Norte Reveal', () => {
     await expect(revealState(page)).toHaveAttribute('data-reveal-fallback', 'false');
     await expect(page.locator('canvas')).toHaveCount(1);
     await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'open', { timeout: 10_000 });
+    // Still the 3D Reveal at the end (building the scene didn't fail and switch to the simple one)
+    await expect(revealState(page)).toHaveAttribute('data-reveal-fallback', 'false');
+    await expect(page.locator('canvas')).toHaveCount(1);
     const dialog = page.getByRole('dialog', { name: 'Norte: a VC map' });
     await expect(dialog).toBeVisible();
     await expect(dialog.getByText('NORTE', { exact: true })).toBeVisible();
@@ -348,7 +351,7 @@ test.describe('the lever (Enter control)', () => {
     await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'intro');
     await ball(page).click();
     await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'open');
-    await page.waitForTimeout(600); // longer than a launch would take
+    await page.waitForTimeout(1000); // longer than a launch would take
     await expect(page).toHaveURL(/#norte$/);
   });
 
@@ -380,7 +383,7 @@ test.describe('the lever (Enter control)', () => {
     await openNorte(page);
     await drag(page, 20, 20);
     await expect(lever(page)).toHaveCSS('--tilt', '0deg');
-    await page.waitForTimeout(600); // longer than a launch would take
+    await page.waitForTimeout(1000); // longer than a launch would take
     await expect(page).toHaveURL(/#norte$/);
     await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'open');
   });
@@ -408,7 +411,7 @@ test.describe('the lever (Enter control)', () => {
     await page.mouse.move(x + 150, y, { steps: 10 });
     await page.mouse.up();
     await expect(lever(page)).toHaveCSS('--tilt', '0deg');
-    await page.waitForTimeout(600); // longer than a launch would take
+    await page.waitForTimeout(1000); // longer than a launch would take
     await expect(page).toHaveURL(/#norte$/);
   });
 

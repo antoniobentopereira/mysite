@@ -50,7 +50,7 @@ Read first: `GLOSSARY.md`, `docs/adr/`, `.scratch/letter-portals/` (Norte spec +
 ## Built in Norte ticket 04 (reuse for About)
 
 - One scene for any Destination: `public/portals/scene.js` reads the Destination block (`color`, `letterIndex`, `tokens[].src`, `hero`). About = new block + its own art; no scene changes needed for flat Tokens.
-- The Hero is still a flat picture (`hero: { letter, grown }`, two SVGs: before and after it "grows"). The About book will need the Hero to become pluggable code (ticket 07 does this for the 3D N).
+- The Hero is pluggable code (ticket 07): the Destination block's `hero.src` points to a module (Norte: `public/portals/heroes/norte-3d.js`) exporting `createHero(THREE, { color })` → `{ object, setGrow(g), pieces(), dispose() }`, plus `letterBounds()` (to fit it over the clicked letter), `TILT` (its own 3D turn) and `ARROW_DIR` (launch direction). Built in a 200 x 200 box; the scene sizes, flies, flips and lights it (key light top left + warm fill in the burst colour) and derives its hitbox from `pieces()`. The About book can follow the same contract; "grow" would be the book opening, and the launch (Enter control fired → Hero leaves the screen, then navigate) may need a book-specific move instead of `ARROW_DIR`.
 - Choreography timings are shared (`public/portals/choreography.js`); the HTML stage has a `.reveal-hero` slot the scene flies the Hero to (wide: left; narrow: top).
 - Libraries are fetched by `public/portals/libs.js` after idle; Three.js is trimmed: anything new the About scene uses (e.g. lights, extra geometries) must be added to `THREE_PARTS` in `scripts/vendor.js` and re-vendored.
 
@@ -66,3 +66,4 @@ Read first: `GLOSSARY.md`, `docs/adr/`, `.scratch/letter-portals/` (Norte spec +
 - 2026-11-26: Norte ticket 03 built (idle charge, hint line); notes above.
 - 2026-11-27: Norte ticket 04 built (3D scene and choreography); notes above.
 - 2026-11-27: Norte ticket 06 built (local-only tuning panel); notes above.
+- 2026-11-27: Norte ticket 07 built (3D N Hero, pluggable Hero module, launch); notes above.
