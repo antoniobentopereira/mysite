@@ -31,8 +31,8 @@ export const DESTINATIONS = {
       { name: 'handshake', kind: 'sticker', src: art('tokens/norte/handshake.svg') },
       { name: 'bar chart', kind: 'sticker', src: art('tokens/norte/bar-chart.svg') },
     ],
-    // Hero: for now a flat drawing in code that morphs from the N and grows into the
-    // rising arrow (loaded with the 3D libraries). The real 3D N comes in ticket 07.
+    // Hero: for now a flat N drawn in code that grows into the rising arrow (loaded
+    // with the 3D libraries). The real 3D N comes in ticket 07.
     hero: { src: art('heroes/norte-flat.js') },
     // Card shown over the Reveal
     card: {
