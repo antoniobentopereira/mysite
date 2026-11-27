@@ -331,11 +331,14 @@ test.describe('the hint line', () => {
 
   test('pops away after the first portal opens, and stays hidden after reload', async ({ page }) => {
     await page.goto('./');
+    const titleBox = () => page.locator('.title').boundingBox();
+    const before = await titleBox();
     await portalN(page).click();
     await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'open');
     await page.keyboard.press('Escape');
     await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'rest');
     await expect(hint(page)).toBeHidden();
+    expect(await titleBox()).toEqual(before); // nothing moves when the hint goes
     await page.reload();
     await expect(page.locator('.title')).toBeVisible();
     await expect(hint(page)).toBeHidden();

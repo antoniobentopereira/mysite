@@ -183,7 +183,8 @@ body:has(.sr-nav a[data-dest="norte"]:focus-visible) .portal[data-dest="norte"] 
 }
 /* After the first portal: a small pop, then gone for good */
 .bottom-left .hint.is-popping { animation: hint-pop 0.45s 0.3s cubic-bezier(0.5, 0, 0.75, 0) forwards; }
-.hint-done .bottom-left .hint { display: none; }
+/* Invisible but still taking its space, so nothing else on the page moves */
+.hint-done .bottom-left .hint { visibility: hidden; }
 @keyframes hint-pop {
   0%   { transform: none; opacity: 1; }
   30%  { transform: scale(1.12); opacity: 1; }

@@ -22,8 +22,8 @@ Notes: the moves are CSS animations on the N's link (`style.css`), and `public/p
 
 Tick each one when done. Run `node tests/serve.js` and open http://localhost:8417/ in Chrome.
 
-- [ ] Watch the N for about 30 s: now and then it does a little hop, a glow of blue, or a jelly sway. It feels cute, not busy.
-- [ ] Hovering the N still gives the usual yellow wiggle, also right after a charge.
-- [ ] The hint line sits under the bottom-left text, smaller and greyer, on a wide and a narrow window.
-- [ ] Open the N, then close it (✕ or Esc): when the homepage comes back, the hint grows a little and pops away.
-- [ ] Reload: the hint stays gone. (To see it again: DevTools > Application > Local storage > delete `portal-hint-done`.)
+- [x] Watch the N for about 30 s: now and then it does a little hop, a glow of blue, or a jelly sway. It feels cute, not busy.
+- [x] Hovering the N still gives the usual yellow wiggle, also right after a charge.
+- [x] The hint line sits under the bottom-left text, smaller and greyer, on a wide and a narrow window.
+- [x] Open the N, then close it (✕ or Esc): when the homepage comes back, the hint grows a little and pops away.
+- [x] Reload: the hint stays gone. (To see it again: DevTools > Application > Local storage > delete `portal-hint-done`.)
