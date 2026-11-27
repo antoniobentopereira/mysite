@@ -6,7 +6,7 @@ Spec: `.scratch/letter-portals/spec.md`.
 
 **Blocked by:** 04
 
-**Status:** ready-for-human
+**Status:** done
 
 - [x] Panel appears on localhost, 127.0.0.1, private LAN addresses and file URLs only.
 - [x] Every tuning value from the spec has a slider with a description; changes apply on Replay (and live where it makes sense, e.g. drag, gravity, hitboxes).
@@ -35,7 +35,7 @@ Tick each one when done. Run `node tests/serve.js` and open http://localhost:841
 - [x] With the Reveal open, move "Hitbox tightness": stickers tuck further behind the card (high) or bounce off before reaching it (low).
 - [x] ~~Click Copy values, paste into a text editor: a list of all 14 values.~~ (replaced by Save)
 - [x] Click Reset: the page reloads and the sliders are back to the defaults.
-- [ ] Move a slider, click Save: the button says "Saved ✓", and `public/portals/choreography.js` shows the new number (VS Code: Source Control lists it as changed).
-- [ ] Move that slider again (don't save), click Reset: it goes back to the value you saved, not the old default.
-- [ ] Stop the server, click Save: a message says it was not saved.
+- [x] Move a slider, click Save: the button says "Saved ✓", and `public/portals/choreography.js` shows the new number (VS Code: Source Control lists it as changed).
+- [x] Move that slider again (don't save), click Reset: it goes back to the value you saved, not the old default.
+- [x] Stop the server, click Save: a message says it was not saved.
 - [x] Open the live site (antoniobento.me) after this is deployed: no panel, and T does nothing.
