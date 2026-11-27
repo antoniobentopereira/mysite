@@ -27,3 +27,7 @@ Tick each one when done. Run `node tests/serve.js` and open http://localhost:841
 - [x] The hint line sits under the bottom-left text, smaller and greyer, on a wide and a narrow window.
 - [x] Open the N, then close it (✕ or Esc): when the homepage comes back, the hint grows a little and pops away.
 - [x] Reload: the hint stays gone. (To see it again: DevTools > Application > Local storage > delete `portal-hint-done`.)
+
+Round 2 (Antonio's feedback: the page dropped when the hint left):
+
+- [ ] When the hint pops away, nothing else moves: the title and corners stay exactly where they were.
