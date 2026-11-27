@@ -26,6 +26,7 @@ export const TIMINGS = {
   heroDelay: 100, // wait after the explosion before the Hero moves
   spinDelay: 600, // after the intro, wait this long before the Hero starts spinning
   spinSpeed: 50, // the Hero's spin (degrees per second)
+  heroTilt: -8, // how far the Hero leans back (degrees; negative = top away from you)
   gravity: 0.5, // Toy box only: how strongly Tokens fall
   drag: 4, // Zero-g air drag (x1000)
   solidInset: 16, // hitbox tightness (ticket 05)

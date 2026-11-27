@@ -5,9 +5,10 @@
 // (thin seams where they meet) held by a few small painted rivets.
 //
 // createHero(THREE, { color }) returns
-//   object       a Three.js group to add to the scene. Its units are a 200 x 200
-//                box (x right, y up, the middle of the box at 0, 0): scale it by
-//                size / 200 to make the box `size` px wide.
+//   object       a Three.js group to add to the scene. Its units are a square box
+//                around the grown Hero, BOX.size wide (x right, y up, the middle
+//                of the box at 0, 0): scale it by size / BOX.size to make the box
+//                `size` px wide.
 //   setGrow(g)   0 = a clean N (stem and diagonal, no tail),
 //                1 = the tail has grown into the rising arrow, head on its tip
 //   dispose()
@@ -16,10 +17,12 @@
 // The paint's highlights come from the scene's environment (scene.js builds a
 // small studio for it); without one it still looks right, only less glossy.
 
-// In box units (y down, like the screen; flipped to y up when building)
+// In drawing units (y down, like the screen; flipped to y up when building)
 const STEM = [[40, 172], [40, 60], [100, 128]]; // the N: stem bottom, stem top, valley
-const TAIL_END = [157.6, 61.6]; // where the grown tail ends (the arrowhead's base)
+const TAIL_ANGLE = Math.atan2(-66.4, 57.6); // the tail rises up-right at this angle
+const TAIL_LEN = 250; // the grown tail, valley to arrowhead base: long, like Norte's (~2.2 stems)
 const WIDTH = 24; // the line's width
+const CUT = 2; // a corner sharper than this (its point reaches past CUT half-widths) is cut flat
 const DEPTH = 20; // how far it is pushed back
 const BEVEL = 2; // the rounded edge around the front and back faces (its depth)
 const BEVEL_OUT = BEVEL * 0.75; // ... and how far it reaches out past the outline
@@ -28,21 +31,21 @@ const SEAM = 0.7; // width of the thin groove where two plates meet
 const RIVET = 1.5, RIVET_RISE = 0.45; // rivet radius, and its height as a share of that
 const RIVET_EDGE = 4.5; // how far a rivet sits in from the stroke's edge
 const RIVET_STEP = 3.5; // and how far beside its seam, on the next plate
-// Its own pose: turned a little so its right side and underside show, like the
-// "N becomes a rising arrow" picture (radians)
-export const TILT = { x: -0.28, y: -0.42 };
+// Its own pose: turned a little round its upright axis so its right side shows,
+// like the "N becomes a rising arrow" picture (radians). How far it leans back is
+// a tuning value (heroTilt, in choreography.js).
+export const TILT = { y: -0.42 };
 
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 const lerp = (a, b, t) => a + (b - a) * t;
 const easeOutBack = (t) => 1 + 2.2 * (t - 1) ** 3 + 1.2 * (t - 1) ** 2;
-const toGroup = ([u, v]) => [u - 100, 100 - v]; // box (y down) -> group units (y up)
 const unit = (a, b) => { const l = Math.hypot(b[0] - a[0], b[1] - a[1]); return [(b[0] - a[0]) / l, (b[1] - a[1]) / l]; };
 const along = (p, d, s) => [p[0] + d[0] * s, p[1] + d[1] * s];
 
 const [VX, VY] = STEM[2];
-const TAIL_LEN = Math.hypot(TAIL_END[0] - VX, TAIL_END[1] - VY);
-const TAIL_DIR = unit(STEM[2], TAIL_END);
-const TAIL_ACROSS = [-TAIL_DIR[1], TAIL_DIR[0]]; // the tail's left side (box units)
+const TAIL_DIR = [Math.cos(TAIL_ANGLE), Math.sin(TAIL_ANGLE)];
+const TAIL_END = along(STEM[2], TAIL_DIR, TAIL_LEN); // where the grown tail ends (the arrowhead's base)
+const TAIL_ACROSS = [-TAIL_DIR[1], TAIL_DIR[0]]; // the tail's left side
 
 // At line point p, the direction across the line (pointing to its left side) and
 // how far the line's edge is along it: half a width on a straight piece, more on a
@@ -56,15 +59,30 @@ function across(prev, p, next) {
   return { dir: [nx, ny], reach: WIDTH / 2 / (nx * n[0] + ny * n[1]) };
 }
 
-// The outline of a thick line through `pts` (box units), with sharp corners.
+// The outline of a thick line through `pts` (drawing units), with mitred corners;
+// a very sharp corner (the N's top left) is cut flat across the stroke coming in,
+// like a real N's top, instead of ending in a long spike.
 // With `head` ({ len, half }) the last end grows an arrowhead, as one outline:
 // no second solid overlapping the line, so no hairline where they meet.
 function strip(pts, head) {
   const left = [], right = [];
+  const half = WIDTH / 2;
   pts.forEach((p, i) => {
     const { dir: [nx, ny], reach: k } = across(pts[i - 1], p, pts[i + 1]);
-    left.push([p[0] + nx * k, p[1] + ny * k]);
-    right.push([p[0] - nx * k, p[1] - ny * k]);
+    const l = [p[0] + nx * k, p[1] + ny * k], r = [p[0] - nx * k, p[1] - ny * k];
+    if (k <= CUT * half) { left.push(l); right.push(r); return; }
+    // Cut: the outer side gets two corners on a line square to the incoming
+    // stroke, half a width past p. Each is where an outer edge meets that line.
+    const d0 = unit(pts[i - 1], p), d1 = unit(p, pts[i + 1]);
+    const dot = (a, b) => a[0] * b[0] + a[1] * b[1];
+    const s = dot([l[0] - p[0], l[1] - p[1]], d0) > 0 ? 1 : -1; // which side is outer
+    const meet = (d) => {
+      const q = along(p, [-d[1] * s, d[0] * s], half); // a point on that outer edge
+      const t = (half - dot([q[0] - p[0], q[1] - p[1]], d0)) / dot(d, d0);
+      return along(q, d, t);
+    };
+    const cut = [meet(d0), meet(d1)];
+    if (s > 0) { left.push(...cut); right.push(r); } else { left.push(l); right.push(...cut); }
   });
   const tip = [];
   if (head) {
@@ -73,6 +91,20 @@ function strip(pts, head) {
   }
   return [...left, ...tip, ...right.reverse()];
 }
+
+// The box: a square around the fully grown Hero, centred on it, so it spins
+// round its own middle and fills its spot. A little room all round, so leaning
+// and spinning (parts come nearer and look bigger) never spill past its spot.
+const GROWN = strip([...STEM, TAIL_END], { len: HEAD_LEN, half: HEAD_HALF });
+const xs = GROWN.map((p) => p[0]), ys = GROWN.map((p) => p[1]);
+const [minX, maxX, minY, maxY] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+const ROOM = 1.08;
+/** The Hero's box, in drawing units: its size and its middle ({ size, cx, cy }). */
+export const BOX = {
+  size: Math.max(maxX - minX, maxY - minY) * ROOM,
+  cx: (minX + maxX) / 2, cy: (minY + maxY) / 2,
+};
+const toGroup = ([u, v]) => [u - BOX.cx, BOX.cy - v]; // drawing (y down) -> group units (y up)
 
 export function createHero(THREE, { color }) {
   const paintColor = new THREE.Color(color);
@@ -156,18 +188,23 @@ export function createHero(THREE, { color }) {
   seam(stemMid, across(STEM[0], stemMid, STEM[1]));
   rivets(stemMid, across(STEM[0], stemMid, STEM[1]), stemUp);
   rivets(along(STEM[0], stemUp, RIVET_EDGE), across(null, STEM[0], STEM[1]), [0, 0]);
-  // The corner at the top of the stem: the diagonal is a plate of its own
-  const top = across(STEM[0], STEM[1], STEM[2]), diag = unit(STEM[1], STEM[2]);
-  seam(STEM[1], top);
-  rivets(STEM[1], { dir: top.dir, reach: top.reach * 0.72 }, diag);
+  // The diagonal is a plate of its own: its seam sits just past the stem's top
+  // corner, where the stroke is a clean width
+  const diag = unit(STEM[1], STEM[2]), diagAt = along(STEM[1], diag, 40);
+  const diagAcross = { dir: [-diag[1], diag[0]], reach: WIDTH / 2 };
+  seam(diagAt, diagAcross);
+  rivets(diagAt, diagAcross, diag);
   // The valley, once the tail starts: the tail is another plate
   const valley = across(STEM[1], STEM[2], TAIL_END);
   seam(STEM[2], valley, tailShown);
   rivets(STEM[2], { dir: valley.dir, reach: valley.reach * 0.8 }, TAIL_DIR, tailPast(0));
-  // Halfway up the tail, once it has grown past there
-  const tailMid = along(STEM[2], TAIL_DIR, TAIL_LEN / 2), straight = { dir: TAIL_ACROSS, reach: WIDTH / 2 };
-  seam(tailMid, straight, tailPast(0.5));
-  rivets(tailMid, straight, TAIL_DIR, tailPast(0.5));
+  // The long tail is three plates: seams a third and two thirds up, once grown past
+  const straight = { dir: TAIL_ACROSS, reach: WIDTH / 2 };
+  for (const share of [1 / 3, 2 / 3]) {
+    const at = along(STEM[2], TAIL_DIR, TAIL_LEN * share);
+    seam(at, straight, tailPast(share));
+    rivets(at, straight, TAIL_DIR, tailPast(share));
+  }
   // Two rivets just behind the head (they move with the tip while it grows). No
   // seam there: head and tail are one smooth piece.
   const headRivets = [];
@@ -209,7 +246,7 @@ export function createHero(THREE, { color }) {
 }
 
 /**
- * Where the clean N (before its tail grows) sits in the 200 x 200 box (y down):
+ * Where the clean N (before its tail grows) sits, in drawing units (y down):
  * { left, top, right, bottom }, so it can be fitted over the clicked letter.
  */
 export function letterBounds() {

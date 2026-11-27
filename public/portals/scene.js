@@ -69,8 +69,8 @@ function buildStudio(THREE, renderer, color) {
  *   libs: { THREE, Matter }
  *   letters: the title's letter spans, in order; heroIndex: the Portal letter
  *   tokens: [{ name, src }] for the other letters, in title order
- *   hero: the Hero's module ({ createHero, letterBounds, TILT, ARROW_DIR }, see
- *     heroes/norte-3d.js); its objects are built in a 200 x 200 box
+ *   hero: the Hero's module ({ createHero, letterBounds, BOX, TILT, ARROW_DIR },
+ *     see heroes/norte-3d.js); its objects are built in a square box BOX.size wide
  *   heroColor: its colour
  *   stage: the Reveal's HTML layer (over the canvas): Tokens are grabbed on it,
  *     its Hero slot is where the Hero lands (and then spins), and its word, card
@@ -85,7 +85,7 @@ function buildStudio(THREE, renderer, color) {
  */
 export function createScene(libs, { color, letters, heroIndex, tokens: tokenList, hero: heroModule, heroColor, stage, P, mode, atEnd, onFirstFrame }) {
   const { THREE, Matter } = libs;
-  const { createHero, letterBounds, TILT: HERO_TILT, ARROW_DIR } = heroModule;
+  const { createHero, letterBounds, BOX: HERO_BOX, TILT: HERO_TILT, ARROW_DIR } = heroModule;
   const heroSlot = stage.querySelector('.reveal-hero');
   let W = innerWidth, H = innerHeight;
   const S = Math.max(54, Math.min(112, Math.min(W, H) * 0.14)); // Token size, px
@@ -221,8 +221,8 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
   const fit = letterBounds();
   const heroStartFor = (l) => {
     const top = l.y - l.h / 2 + l.ink.top, bottom = l.y - l.h / 2 + l.ink.bottom, left = l.x - l.w / 2 + l.ink.left;
-    const size = ((bottom - top) / (fit.bottom - fit.top)) * 200, k = size / 200;
-    return { x: left + (100 - fit.left) * k, y: top + (100 - fit.top) * k, size, rz: 0 };
+    const k = (bottom - top) / (fit.bottom - fit.top), size = HERO_BOX.size * k;
+    return { x: left + (HERO_BOX.cx - fit.left) * k, y: top + (HERO_BOX.cy - fit.top) * k, size, rz: 0 };
   };
   const heroEndNow = () => { const slot = heroSlot.getBoundingClientRect(); return { ...centre(slot), size: Math.min(slot.width, slot.height), rz: 0 }; };
   let heroStart = heroStartFor(heroLetter), heroEnd = heroEndNow();
@@ -230,7 +230,7 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
   const hero = { pose: { ...heroStart, ry: 0, s: 1, back: false, turn: HERO_TURN_START }, grow: 0, spin: 0 };
   const hero3d = createHero(THREE, { color: heroColor });
   const heroObj = hero3d.object, heroTilt = new THREE.Group();
-  heroObj.rotation.set(HERO_TILT.x, HERO_TILT.y, 0, 'YXZ');
+  heroObj.rotation.set(0, HERO_TILT.y, 0, 'YXZ'); // posed every frame (poseHero)
   heroTilt.add(heroObj);
   heroTilt.rotation.order = 'ZYX'; // like the cards: spin in the screen plane, flip on its upright axis
   scene.add(heroTilt);
@@ -279,9 +279,9 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
   // screen plane, flip ry, `turn` (0..1) of its own 3D turn, and its spin
   function poseHero(x, y, size, rz, ry, turn, spin) {
     heroTilt.position.set(x - W / 2, H / 2 - y, 0);
-    heroTilt.scale.setScalar(Math.max(size, 0.01) / 200);
+    heroTilt.scale.setScalar(Math.max(size, 0.01) / HERO_BOX.size);
     heroTilt.rotation.set(0, ry, -rz);
-    heroObj.rotation.x = HERO_TILT.x * turn;
+    heroObj.rotation.x = P.heroTilt * DEG * turn; // leaning back (tuning value, read live)
     heroObj.rotation.y = HERO_TILT.y * turn + spin; // around the upright axis (outermost)
   }
   function showHero(now) {

@@ -30,6 +30,8 @@ Notes:
 - Spin (Antonio's request, like Norte's own site): once the intro is over, plus the spin delay, the Hero spins round its upright axis, easing in. Lights stay put, so its shading and highlights change as it turns. Seams and rivets are on its back too. Lever fired: it turns back to face front during the pull-back, then launches along its arrow. Closing: it unwinds to face front on the way home. Back from VC Map: it faces front, then spins again after the delay.
 - Tuning: "Hero spin delay (ms)" (default 600, on Replay) and "Hero spin speed (deg/s)" (default 50, live; 0 = still).
 - No Hero hitbox any more (Antonio's decision): Tokens drift behind it and can be grabbed there. Word, lever and card stay solid.
+- Shape update: the N's top-left corner is cut flat (it was a long spike that the rounded edge and a seam stuck out of: the "lip"). That corner's seam moved a little down the diagonal. The tail is much longer (about 2.2 times the stem, like Norte's arrow) with two seams; the Hero's box is a square around the whole grown figure with 8% room, so it fills its spot without spilling onto NORTE.
+- Tuning: "Hero tilt back (deg)" (default −8, live; it was a fixed −16).
 
 ## Antonio's checks
 
@@ -60,3 +62,9 @@ Spin:
 - [ ] Stickers drift behind the spinning Hero, and you can still grab one there.
 - [ ] Push the lever while it is turned away: it turns to face you, then shoots off up-right.
 - [ ] Press Esc while it is turned away: it turns to face you on its way home into the N.
+
+Shape and tilt:
+
+- [ ] The N's top-left corner is a clean, flat corner: no lip or ledge sticking out, from any side while it spins.
+- [ ] The arrow is long, like Norte's, and the whole Hero stays clear of the NORTE word (wide and narrow).
+- [ ] Tuning panel: "Hero tilt back" changes how far it leans back right away; Save keeps your value.

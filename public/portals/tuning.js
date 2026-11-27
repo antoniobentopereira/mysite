@@ -26,6 +26,7 @@ const SLIDERS = [
   ['heroDelay', 'Hero delay after explosion (ms)', 0, 1500, 50, 'Wait after the explosion before the Hero moves.'],
   ['spinDelay', 'Hero spin delay (ms)', 0, 5000, 100, 'Wait after the intro has finished before the Hero starts spinning.'],
   ['spinSpeed', 'Hero spin speed (deg/s)', 0, 360, 5, 'Live. How fast the Hero spins once it has started (0 = still).'],
+  ['heroTilt', 'Hero tilt back (deg)', -45, 45, 1, 'Live. How far the Hero leans back (negative: its top away from you; 0: upright).'],
   ['drag', 'Air drag x1000 (Zero-g)', 0, 40, 1, 'Live. How quickly floating Tokens slow down.'],
   ['solidInset', 'Hitbox tightness (px)', -20, 60, 2, "Live. Shrinks the card's hitbox: higher = Tokens tuck further behind it."],
   ['zap', 'Idle charge every ~ (s)', 1, 12, 0.5, 'Live (from the next one). Average time between charges on N.'],
