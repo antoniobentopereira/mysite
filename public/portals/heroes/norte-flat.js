@@ -21,6 +21,35 @@ const lerp = (a, b, t) => a + (b - a) * t;
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 const easeOutBack = (t) => 1 + 2.2 * (t - 1) ** 3 + 1.2 * (t - 1) ** 2;
 
+/**
+ * The fully grown Hero's shape, for its hitbox: a list of convex pieces, each a
+ * cloud of [x, y] points (in the same 200 x 200 box) whose outline is the piece.
+ * One piece per stroke and one for the head, each including its outline and the
+ * extruded edge below-left of it.
+ */
+export function outline() {
+  const half = WIDTH / 2 + OUTLINE;
+  const line = [...STEM, TAIL_END];
+  const [vx, vy] = STEM[2];
+  const len = Math.hypot(TAIL_END[0] - vx, TAIL_END[1] - vy);
+  const tail = [(TAIL_END[0] - vx) / len, (TAIL_END[1] - vy) / len];
+  // A piece and its copy pushed down-left by the edge's depth
+  const withEdge = (pts) => [...pts, ...pts.map(([x, y]) => [x - DEPTH, y + DEPTH])];
+  const pieces = [];
+  for (let i = 0; i < line.length - 1; i++) {
+    const [ax, ay] = line[i], [bx, by] = line[i + 1];
+    const l = Math.hypot(bx - ax, by - ay), ux = (bx - ax) / l, uy = (by - ay) / l;
+    // Corners between strokes stick out a little: reach half a width past them
+    const a0 = i > 0 ? half : 0, b0 = i < line.length - 2 ? half : 0;
+    const A = [ax - ux * a0, ay - uy * a0], B = [bx + ux * b0, by + uy * b0];
+    const nx = -uy * half, ny = ux * half;
+    pieces.push(withEdge([[A[0] + nx, A[1] + ny], [B[0] + nx, B[1] + ny], [B[0] - nx, B[1] - ny], [A[0] - nx, A[1] - ny]]));
+  }
+  const L = HEAD_LEN + OUTLINE, Bh = HEAD_HALF + OUTLINE, [hx, hy] = TAIL_END, [ux, uy] = tail;
+  pieces.push(withEdge([[hx + ux * L, hy + uy * L], [hx + uy * Bh, hy - ux * Bh], [hx - uy * Bh, hy + ux * Bh]]));
+  return pieces;
+}
+
 export default function drawNorteHero(ctx, { grow }) {
   const pts = [...STEM];
   let headPath = null;

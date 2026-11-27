@@ -19,6 +19,8 @@
   background: var(--reveal-bg);
   opacity: 0;
   transition: opacity 0.22s ease; /* keep in sync with FADE_MS in reveal.js */
+  user-select: none; /* dragging Tokens (or the lever) never selects text */
+  -webkit-user-select: none;
 }
 .reveal.is-shown { opacity: 1; }
 
@@ -103,6 +105,11 @@
   -webkit-tap-highlight-color: transparent;
 }
 .lever.dragging { cursor: grabbing; }
+/* Only the red ball takes presses: around it, presses reach the Tokens floating
+   behind the lever (so they can be grabbed there). Keyboard focus is unchanged. */
+.lever-wrap, .lever-wrap * { pointer-events: none; }
+.lever-wrap .lever-ball { pointer-events: auto; cursor: grab; }
+.lever.dragging .lever-ball { cursor: grabbing; }
 .lever:focus-visible { outline: 4px solid var(--reveal-accent); outline-offset: 6px; }
 .lever-box {
   position: absolute;

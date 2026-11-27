@@ -16,7 +16,7 @@ const TOKEN = 0x0002; // collision category of Tokens (walls and hitboxes keep t
 const MOUSE_EVENTS = ['mousemove', 'mousedown', 'mouseup', 'touchmove', 'touchstart', 'touchend', 'wheel', 'mousewheel', 'DOMMouseScroll'];
 
 export function createWorld(Matter, P, { mode = 'zerog', element } = {}) {
-  const { Engine, Bodies, Body, Composite, Mouse, MouseConstraint, Query } = Matter;
+  const { Engine, Bodies, Body, Composite, Mouse, MouseConstraint, Query, Vertices } = Matter;
   const engine = Engine.create();
   engine.gravity.y = mode === 'toy' ? P.gravity : 0;
   const airDrag = mode === 'zerog' ? P.drag / 1000 : 0.015;
@@ -44,6 +44,23 @@ export function createWorld(Matter, P, { mode = 'zerog', element } = {}) {
     const { x, y } = b.position, r = (b.bounds.max.x - b.bounds.min.x) / 2;
     if (x >= 0 && x <= W && y >= 0 && y <= H) return;
     Body.setPosition(b, { x: Math.min(Math.max(x, r), Math.max(r, W - r)), y: Math.min(Math.max(y, r), Math.max(r, H - r)) });
+  }
+
+  // A Token caught inside a hitbox (it was there when the hitboxes appeared, or
+  // was dragged deep in) jumps to the nearest spot on screen where it touches
+  // none, keeping its speed. Matter alone pushes it out slowly or wedges it.
+  const DIRS = Array.from({ length: 16 }, (_, i) => [Math.cos((i * Math.PI) / 8), Math.sin((i * Math.PI) / 8)]);
+  function moveOut(b) {
+    const from = { ...b.position }, r = (b.bounds.max.x - b.bounds.min.x) / 2;
+    for (let d = 4; d <= Math.max(W, H); d += 4) {
+      for (const [dx, dy] of DIRS) {
+        const x = from.x + dx * d, y = from.y + dy * d;
+        if (x < r || x > W - r || y < r || y > H - r) continue;
+        Body.setPosition(b, { x, y });
+        if (!Query.collides(b, solids).length) return;
+      }
+    }
+    Body.setPosition(b, from); // no free spot (tiny screen): leave it to the physics
   }
 
   // Grab and fling
@@ -92,21 +109,28 @@ export function createWorld(Matter, P, { mode = 'zerog', element } = {}) {
     },
 
     /**
-     * Make these boxes solid ({ x, y, w, h, pad } in screen px; null: none).
-     * Zero-g only. Each is shrunk by P.solidInset (plus its own pad) on every
-     * side: Tokens float under the HTML, so a tight hitbox lets them tuck a
-     * little behind the edges without ever covering the middle.
+     * Make these shapes solid (screen px; null: none). Zero-g only. Each shape is
+     *   { x, y, w, h, radius }  a box (top left, size, rounded corners), or
+     *   { cx, cy, r }           a circle, or
+     *   { points: [{x, y}] }    the outline around these points (made convex).
+     * A Token already caught inside one is moved to the nearest free spot.
      */
-    setSolids(boxes) {
+    setSolids(shapes) {
       Composite.remove(engine.world, solids);
       solids = [];
-      if (!boxes || mode !== 'zerog') return;
-      solids = boxes.map((s) => {
-        const cut = P.solidInset + (s.pad || 0);
-        const w = Math.max(10, s.w - 2 * cut), h = Math.max(10, s.h - 2 * cut);
-        return Bodies.rectangle(s.x + s.w / 2, s.y + s.h / 2, w, h, { isStatic: true, chamfer: { radius: Math.min(12, w / 3, h / 3) } });
+      if (!shapes || mode !== 'zerog') return;
+      solids = shapes.map((s) => {
+        const opts = { isStatic: true };
+        if (s.points) {
+          const v = Vertices.clockwiseSort(Vertices.hull(s.points.map((p) => ({ ...p }))));
+          return Body.create({ ...opts, position: Vertices.centre(v), vertices: v });
+        }
+        if (s.r) return Bodies.circle(s.cx, s.cy, s.r, opts);
+        const w = Math.max(4, s.w), h = Math.max(4, s.h), radius = Math.min(s.radius || 0, w / 2 - 1, h / 2 - 1);
+        return Bodies.rectangle(s.x + w / 2, s.y + h / 2, w, h, radius > 0 ? { ...opts, chamfer: { radius } } : opts);
       });
       Composite.add(engine.world, solids);
+      bodies.forEach((b) => { if (Query.collides(b, solids).length) moveOut(b); });
     },
 
     /** Advance by dt ms (in fixed steps). */
@@ -125,6 +149,8 @@ export function createWorld(Matter, P, { mode = 'zerog', element } = {}) {
         acc -= STEP;
       }
       bodies.forEach(keepInside);
+      // Deep inside a hitbox (its middle is in one): out it goes
+      if (solids.length) bodies.forEach((b) => { if (Query.point(solids, b.position).length) moveOut(b); });
       // A hand over a Token says it can be grabbed
       if (element) {
         const cursor = grab.body ? 'grabbing' : Query.point(bodies, mouse.position).length ? 'grab' : '';

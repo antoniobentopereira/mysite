@@ -85,8 +85,8 @@ export function open(name, { instant = false, onRequestClose = () => {} } = {}) 
     // The scene draws the letters in the homepage font, so it waits for it too
     loadLibs().then(async (libs) => {
       await document.fonts.ready;
-      const { default: drawHero } = await import(dest.hero.src); // the Hero's own code
-      return { ...libs, drawHero };
+      const { default: drawHero, outline: heroOutline } = await import(dest.hero.src); // the Hero's own code
+      return { ...libs, drawHero, heroOutline };
     })
       .then(ifStill((libs) => startScene(libs, dest)), ifStill(useFallback));
   }
@@ -119,6 +119,7 @@ function createSceneFor(libs, dest, letters) {
     heroIndex: dest.letterIndex,
     tokens: dest.tokens,
     drawHero: libs.drawHero,
+    heroOutline: libs.heroOutline,
     stage,
     P: TIMINGS,
     mode: GRAVITY_MODE,
@@ -256,7 +257,8 @@ function buildStage(name, dest, onRequestClose) {
   // Tokens are grabbed on the stage (mouse and touch events). A press on the
   // close button, the card or the lever is theirs: it never grabs a Token too,
   // and the end of a tap stays theirs (the physics would cancel its click).
-  el.querySelectorAll('.reveal-close, .reveal-card, .lever-wrap').forEach((part) => {
+  // (Of the lever, only its red ball takes presses, see reveal.css.)
+  el.querySelectorAll('.reveal-close, .reveal-card, .lever-ball').forEach((part) => {
     ['mousedown', 'touchstart', 'touchend'].forEach((n) => part.addEventListener(n, (e) => e.stopPropagation(), { passive: true }));
   });
   // A click or tap during the intro only skips to the end (it doesn't also

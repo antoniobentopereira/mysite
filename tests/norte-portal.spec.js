@@ -185,6 +185,20 @@ test('grabbing and flinging around the Reveal never steals a click from the leve
   await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'rest');
 });
 
+test('dragging across the Reveal never selects text', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('./');
+  await portalN(page).click();
+  await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'open');
+  const card = await page.locator('.reveal-card').boundingBox();
+  await page.mouse.move(card.x - 200, card.y - 100);
+  await page.mouse.down();
+  await page.mouse.move(card.x + card.width - 10, card.y + card.height - 10, { steps: 10 });
+  await page.mouse.up();
+  await page.mouse.dblclick(card.x + 60, card.y + card.height / 2); // a double-click selects a word, normally
+  expect(await page.evaluate(() => getSelection().toString())).toBe('');
+});
+
 test.describe('on a touch screen', () => {
   test.use({ hasTouch: true, viewport: { width: 390, height: 844 } });
   test('tapping ✕ closes the Reveal (grabbing Tokens does not swallow the tap)', async ({ page }) => {
@@ -267,6 +281,7 @@ test.describe('closing the Norte Reveal', () => {
 
 test.describe('the lever (Enter control)', () => {
   const lever = (page) => page.getByRole('button', { name: 'Enter Norte: a VC map' });
+  const ball = (page) => page.locator('.lever-ball'); // the red ball: the only part you press
   const openNorte = async (page) => {
     await page.goto('./');
     await portalN(page).click();
@@ -330,7 +345,7 @@ test.describe('the lever (Enter control)', () => {
     await page.goto('./');
     await portalN(page).click();
     await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'intro');
-    await lever(page).click();
+    await ball(page).click();
     await expect(revealState(page)).toHaveAttribute('data-reveal-phase', 'open');
     await page.waitForTimeout(600); // longer than a launch would take
     await expect(page).toHaveURL(/#norte$/);
@@ -338,13 +353,13 @@ test.describe('the lever (Enter control)', () => {
 
   test('a tap on the lever launches into VC Map', async ({ page }) => {
     await openNorte(page);
-    await lever(page).click();
+    await ball(page).click();
     await expect(page).toHaveURL(/\/vc-map\/$/);
   });
 
   // Drag the ball by (dx, dy), in small steps like a real hand
   const drag = async (page, dx, dy) => {
-    const box = await lever(page).boundingBox();
+    const box = await ball(page).boundingBox();
     const x = box.x + box.width / 2, y = box.y + box.height / 2;
     await page.mouse.move(x, y);
     await page.mouse.down();
@@ -382,6 +397,19 @@ test.describe('the lever (Enter control)', () => {
       for (const box of [l, card]) expect(box.y + box.height).toBeLessThanOrEqual(viewport.height); // all on screen
     });
   }
+
+  test('pressing next to the red ball (where Tokens float) does not move the lever', async ({ page }) => {
+    await openNorte(page);
+    const box = await lever(page).boundingBox();
+    const x = box.x + 6, y = box.y + 6; // the lever's empty top-left corner
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x + 150, y, { steps: 10 });
+    await page.mouse.up();
+    await expect(lever(page)).toHaveCSS('--tilt', '0deg');
+    await page.waitForTimeout(600); // longer than a launch would take
+    await expect(page).toHaveURL(/#norte$/);
+  });
 
   test('the lever is the only way in: no plain link on the card', async ({ page }) => {
     await openNorte(page);

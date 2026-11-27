@@ -42,6 +42,7 @@ function flipPose(u, dur) {
  *   tokens: [{ name, src }] for the other letters, in title order
  *   drawHero(ctx, { grow }): draws the flat Hero in a 200 x 200 box
  *     (see heroes/norte-flat.js); the 3D Hero replaces it in ticket 07
+ *   heroOutline(): the grown Hero's shape in that box, for its hitbox (optional)
  *   stage: the Reveal's HTML layer (over the canvas): Tokens are grabbed on it,
  *     and its Hero slot, word, card and lever become solid once the Hero lands
  *   atEnd: skip the intro (direct #norte links, Back from the Destination)
@@ -51,7 +52,7 @@ function flipPose(u, dur) {
  * Resizing the window (or rotating a phone) re-lays everything out to the new
  * screen. While the tab is hidden the scene and its physics are paused.
  */
-export function createScene(libs, { color, letters, heroIndex, tokens: tokenList, drawHero, stage, P, mode, atEnd, onFirstFrame }) {
+export function createScene(libs, { color, letters, heroIndex, tokens: tokenList, drawHero, heroOutline, stage, P, mode, atEnd, onFirstFrame }) {
   const { THREE, Matter } = libs;
   const heroSlot = stage.querySelector('.reveal-hero');
   let W = innerWidth, H = innerHeight;
@@ -207,17 +208,34 @@ export function createScene(libs, { color, letters, heroIndex, tokens: tokenList
     for (let n = el; n && n !== stage; n = n.offsetParent) { x += n.offsetLeft; y += n.offsetTop; }
     return { x, y, w: el.offsetWidth, h: el.offsetHeight };
   }
-  // Once the Hero has landed, it, the word, the lever and the card are solid.
-  // The arrow only fills the middle of the Hero's square, so that box shrinks more.
+  // Once the Hero has landed, it, the word, the lever and the card are solid,
+  // each with a hitbox shaped like what you see:
+  //   Hero   its real outline (strokes, head, extruded edge), from the Hero's code
+  //   word   one box per letter
+  //   lever  its box, stick and round ball (as it stands upright), and its label
+  //   card   its rounded box, shrunk by the hitbox tightness (P.solidInset): the
+  //          only one Tokens tuck a little behind
+  const radiusOf = (el) => parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0;
   function makeSolid() {
     solid = true;
-    const hb = layoutBox(heroSlot);
-    const boxes = [{ ...hb, pad: Math.min(hb.w, hb.h) * 0.12 }];
-    for (const sel of ['.reveal-word', '.lever', '.lever-label', '.reveal-card']) {
-      const el = stage.querySelector(sel);
-      if (el) boxes.push(layoutBox(el));
+    const shapes = [];
+    const k = heroEnd.size / 200, hx = heroEnd.x - heroEnd.size / 2, hy = heroEnd.y - heroEnd.size / 2;
+    if (heroOutline) for (const piece of heroOutline()) shapes.push({ points: piece.map(([u, v]) => ({ x: hx + u * k, y: hy + v * k })) });
+    else shapes.push(layoutBox(heroSlot));
+    stage.querySelectorAll('.reveal-word .w').forEach((el) => shapes.push(layoutBox(el)));
+    const part = (sel) => stage.querySelector(sel);
+    const inset = P.solidInset;
+    if (part('.lever')) {
+      // The box reaches down into the card's hitbox, so no Token wedges between them
+      const box = part('.lever-box');
+      const b = layoutBox(box);
+      shapes.push({ ...b, h: b.h + Math.max(0, inset), radius: radiusOf(box) }, layoutBox(part('.lever-stick')), layoutBox(part('.lever-label')));
+      const ball = layoutBox(part('.lever-ball'));
+      shapes.push({ cx: ball.x + ball.w / 2, cy: ball.y + ball.h / 2, r: ball.w / 2 });
     }
-    world.setSolids(boxes);
+    const card = part('.reveal-card'), c = layoutBox(card);
+    shapes.push({ x: c.x + inset, y: c.y + inset, w: c.w - 2 * inset, h: c.h - 2 * inset, radius: radiusOf(card) - inset });
+    world.setSolids(shapes);
   }
   function explode() {
     exploded = true;
